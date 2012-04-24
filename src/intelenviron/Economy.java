@@ -4,41 +4,54 @@
  */
 package intelenviron;
 
+import twitter4j.Tweet;
+
 /**
  *
  * @author me
  */
-public class Economy {
+public class Economy extends TwitterUpdater {
 
-    public Economy() {
-            
-    }
-    
-    public void load(String path) {
+    public Economy(String currency) {
+        super(currency, 180);
+        
         //load balances
+
+         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override public void run() {
+                save();
+            }            
+        }));
+        
     }
+      
     
-    public void save(String path) {
+    public synchronized void save() {
         //save log
         //save balances
         //save map        
     }
     
-    public double getBalance(String agent, Currency c) {
+    public double getBalance(String agent, String currency) {
         return 0;
     }
     
-    public void setBalance(String agent, Currency c, double newAmount, String reason) {
+    public synchronized void setBalance(String agent, String c, double newAmount, String reason) {
         
     }
     
-    public void transferBalance(String agentFrom, String agentTo, Currency c, double transferAmount, String reason) {
+    public synchronized void transferBalance(String agentFrom, String agentTo, String c, double transferAmount, String reason) {
         
     }
     
-    public void setAgentLocation(double lat, double lng) {
+    public synchronized void setAgentLocation(double lat, double lng) {
         
     }
+
+    @Override
+    public void onTweet(Tweet t) {
+    }
+    
     
     
 }

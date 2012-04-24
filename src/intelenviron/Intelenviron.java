@@ -8,6 +8,7 @@ import java.io.*;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.python.util.PythonInterpreter;
 
 /**
  *
@@ -17,17 +18,17 @@ public class Intelenviron {
     
     public static String exec(String cmd) {
         try {
-                    StringBuffer r = new StringBuffer();
-                    Process p = Runtime.getRuntime().exec(cmd);
-                    InputStream i = p.getInputStream();
-                    p.waitFor();
-                    BufferedReader in = new BufferedReader(new InputStreamReader(i));  
-                    String line = null;  
-                    while ((line = in.readLine()) != null) {  
-                        r.append(line + "\n");
-                    }  
-                    in.close();        
-                    return r.toString();
+            StringBuffer r = new StringBuffer();
+            Process p = Runtime.getRuntime().exec(cmd);
+            InputStream i = p.getInputStream();
+            p.waitFor();
+            BufferedReader in = new BufferedReader(new InputStreamReader(i));  
+            String line = null;  
+            while ((line = in.readLine()) != null) {  
+                r.append(line + "\n");
+            }  
+            in.close();        
+            return r.toString();
         }
         catch (Exception e) {
             return e.toString();
@@ -46,15 +47,17 @@ public class Intelenviron {
     }
     
     public static void main(String[] args) {
-        log("Starting");
-        new Web("admin", "password", 1000 * 60 * 60);
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+        log("Starting");                       
+        
+        final PythonInterpreter interp = new PythonInterpreter();
+        String scriptFile = "run.py";
+        interp.execfile(scriptFile);
 
-            @Override
-            public void run() {
+         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override public void run() {
                 log("Stopping");
-            }
-            
+            }            
         }));
+        
     }
 }
