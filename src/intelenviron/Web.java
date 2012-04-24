@@ -121,6 +121,21 @@ public class Web {
             }
             
         });
+        get(new Route("/log") {
+
+            @Override
+            public Object handle(Request rqst, Response rspns) {
+                rspns.header("Content-type", "text/html");
+                
+                String result = Intelenviron.exec("tail -n 32 data/log");
+                
+                
+                //rspns.header("Content-type", "text/html");
+                        
+                return "<html><pre>" + result + "</pre></html>";
+            }
+            
+        });
         
     }
 }
