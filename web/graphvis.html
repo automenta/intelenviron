@@ -12,7 +12,11 @@ and open the template in the editor.
         <script type="text/javascript" src="/static/sigma/sigma.forceatlas2.js"></script>
         <script type="text/javascript">           
             
-            var rootID = 5;
+            var rootID = 0;
+            
+            function thisNode(l) {
+                rootID = l;
+            }
             
             $(document).ready(function(){
                 var sigRoot = document.getElementById('graph');

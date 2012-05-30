@@ -242,6 +242,25 @@ public class KBWeb {
             }
             
         });
+        get(new Route("/graph/:nodeid") {
+
+            @Override
+            public Object handle(Request rqst, Response rspns) {
+                try {
+                    Long id = Long.parseLong(rqst.params(":nodeid"));
+                    htmlHeader(rspns);
+                    String commands = "<script type='text/javascript'>thisNode(" + id + ");</script>";
+                    
+                    getStaticBinaryFile("graphvis.html", rspns.raw().getOutputStream(), commands);
+                    return null;
+                } catch (IOException ex) {
+                    Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
+                    return null;
+                }
+                
+            }
+            
+        });
         
         get(new Route("/graph/:nodeid/js") {
             private Traverser getNeighbors( final Node x )
