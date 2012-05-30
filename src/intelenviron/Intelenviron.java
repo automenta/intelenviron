@@ -50,7 +50,7 @@ public class Intelenviron {
         log("Starting");                       
         
         final PythonInterpreter interp = new PythonInterpreter();
-        String scriptFile = "run.py";
+        String scriptFile = "conf/default.py";
         interp.execfile(scriptFile);
 
          Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {

@@ -1,0 +1,36 @@
+#_Panel {
+    color: #ddd;
+    background-color: black;
+}
+a {
+    color: #fff;
+}
+
+.ContentHighlighted {
+    background-color: #444;
+}
+
+
+body {
+   margin: 1%;
+   background-color: #333;
+}
+
+
+#Status {
+    color: white;
+}
+
+#_Font {
+    color: white;
+}
+#_Bottom {
+    background-color: transparent;
+}
+
+#StatusHover {
+    background-color: white;
+}
+#_FontHover {
+    background-color: white;
+}

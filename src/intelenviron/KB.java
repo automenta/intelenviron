@@ -15,7 +15,7 @@ import org.neo4j.graphdb.index.Index;
 import org.neo4j.rest.graphdb.RestGraphDatabase;
 
 /**
- *
+ * Knowledebase / Database
  * @author me
  */
 public class KB {
@@ -69,6 +69,9 @@ public class KB {
     public Node getNode(String id) {
         return nodeIndex.get(ID, id).getSingle();
     }
+    public Node getNode(long id) {
+        return graph.getNodeById(id);
+    }
     
     public KB(String location) {
         graph = new GraphDatabaseFactory().newEmbeddedDatabase(location);
@@ -83,10 +86,6 @@ public class KB {
             nodeIndex = graph.index().forNodes( "node_auto_index" );            
         }
         
-        //        Node x = n.createNode();
-        //        x.setProperty("x", "x");
-        //        n.getReferenceNode().createRelationshipTo(x, TestNeo4JConnection.RelTypes.NODE );
-
     }
 
     public Node getNode(Class c, String id) {
@@ -130,6 +129,10 @@ public class KB {
 
     public void shutdown() {
         graph.shutdown();
+    }
+
+    Iterable<Node> getNodes() {
+        return graph.getAllNodes();
     }
 
     

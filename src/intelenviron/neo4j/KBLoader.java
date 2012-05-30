@@ -7,11 +7,8 @@ package intelenviron.neo4j;
 import intelenviron.Calais;
 import intelenviron.KB;
 import intelenviron.Session;
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import mx.bigdata.jcalais.CalaisResponse;
 import org.horrabin.horrorss.RssChannelBean;
 import org.horrabin.horrorss.RssFeed;
@@ -52,7 +49,7 @@ public class KBLoader {
 
             @Override
             public void run(Node n) {
-                n.setProperty("when", d.toString());
+                n.setProperty("when", d.getTime());
                 if (loc!=null) {
                     if (loc.getName()!=null)
                         n.setProperty("where", loc.getName());
@@ -93,6 +90,9 @@ public class KBLoader {
     public static class Media {
     
     }
+    public static class Document {
+    
+    }
     
     public static Node getTag(KB kb, String tag) {
         return kb.getNode(Tag.class, tag.toLowerCase());
@@ -109,7 +109,7 @@ public class KBLoader {
 
             @Override
             public void run(Node n) {
-                n.setProperty("when", s.getCreatedAt().toString());
+                n.setProperty("when", s.getCreatedAt().getTime());
                 n.setProperty("content", s.getText());
                 if (s.getGeoLocation()!=null)
                     n.setProperty("where", s.getGeoLocation().getLatitude()+ "," + s.getGeoLocation().getLongitude());
@@ -135,7 +135,7 @@ public class KBLoader {
 
             @Override
             public void run(Node n) {
-                n.setProperty("when", s.getCreatedAt().toString());
+                n.setProperty("when", s.getCreatedAt().getTime());
                 n.setProperty("content", s.getText());
                 if (s.getGeoLocation()!=null)
                     n.setProperty("where", s.getGeoLocation().getLatitude()+ "," + s.getGeoLocation().getLongitude());
@@ -217,7 +217,7 @@ public class KBLoader {
                 final CalaisResponse cr = calais.analyze(cleanText);
 
 
-                Node x = kb.getNode(RssItemBean.class, item.getLink(), new KBLoader.Transactable() {
+                Node x = kb.getNode(Document.class, item.getLink(), new KBLoader.Transactable() {
 
                     @Override
                     public void run(Node n) {
@@ -225,7 +225,7 @@ public class KBLoader {
                         n.setProperty("url", item.getLink());
                         n.setProperty("content", item.getDescription());
                         n.setProperty("content.text", cleanText);
-                        n.setProperty("when", item.getPubDate().toString());
+                        n.setProperty("when", item.getPubDate().getTime());
                         n.setProperty("category", item.getCategory());
                         n.setProperty("author", item.getAuthor());
 

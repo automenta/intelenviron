@@ -1,0 +1,581 @@
+<link rel="stylesheet" type="text/css" href="/static/cortexit/cortexit.css" />
+<link rel="shortcut icon" href="/static/cortexit/favicon.ico" />
+<script type='text/javascript' src='/static/cortexit/animator.js'></script>
+
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/base/jquery-ui.css" type="text/css" media="all" />
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+
+<link id="themeCSS" rel="stylesheet" type="text/css"  />
+<script>
+
+    var defaultTheme = 'default-black';
+    var minFrameLength = 8;
+    var pageurl = 'http://cortexit.org';
+
+    var fontSize = 60;
+    var text;
+    var nodes = [];
+    var currentNode;
+    var speechEnabled = false;
+
+    function enableSpeech(line) {
+        speechEnabled = true;
+
+        var speech = document.getElementById("_Speech");
+        speech.style.display = 'inline';
+        var speechLine = line.replace("&nbsp;", " ").replace(/<\/?[a-z][a-z0-9]*[^<>]*>/ig, "");
+
+        //SEE: http://www.vikitech.com/980/top-10-web-based-services-for-text-to-speech-conversion
+
+        var speechLineEncoded = escape(speechLine);
+        //var speechURL = 'http://translate.google.com/translate_tts?q=' + speechLineEncoded;
+        
+        var speechURL = 'http://vozme.com/text2voice.php?bookmarklet=1&gn=fm&interface=full&default_language=en&text=' + speechLineEncoded;
+        
+        $('#_Speech').fadeIn('slow');
+
+        speech.innerHTML = '<iframe src="' + speechURL + '" width="350px" height="120px"></iframe>';
+    }
+    
+    function disableSpeech() {
+        speechEnabled = false;
+        var speech = document.getElementById("_Speech");
+        $('#_Speech').fadeOut('slow', function() {
+            speech.innerHTML = '';            
+        });
+    }
+
+    function toggleSpeech() {
+        if (speechEnabled == true) {
+            disableSpeech();
+        }
+        else {
+            enableSpeech($('#_Content').text());
+        }
+    }
+
+    function showNode(f) {
+        
+        disableSpeech();
+
+        var content = document.getElementById("_Content");
+        content.style.opacity = 0;
+        
+
+        var line = nodes[f].name;
+        
+        if (nodes[f].ins != null) {
+            for (var ii in nodes[f].ins) {
+                var xi = nodes[f].ins[ii];
+                var id = xi.id;
+                var name = xi.name;
+                var relationship = '';
+                if (xi.via!=null) {
+                    relationship = xi.via.name;
+                }
+                var r = '<p><a href="/node/' + id +'">' + name + '</a> -> ' + relationship + '</p>';
+                line = line + r;
+            }
+        }
+        if (nodes[f].outs != null) {
+            for (var ii in nodes[f].outs) {
+                var xi = nodes[f].outs[ii];
+                var id = xi.id;
+                var name = xi.name;
+                var relationship = '';
+                if (xi.via!=null) {
+                    relationship = xi.via.name;
+                }
+                var r = '<p>' + relationship + ' -> <a href="/node/' + id +'">' + name + '</a></p>';
+                line = line + r;
+            }
+        }
+        
+        content.innerHTML = line;
+
+        var status = document.getElementById("Status");
+        status.innerHTML = (f+1) + '/' + nodes.length;
+
+        var prev = document.getElementById("_Prev");
+        if (f == 0) {
+            prev.innerHTML = '&nbsp;';
+        }
+        else {
+            prev.innerHTML = '<a href="javascript:goPrevious()"><img src="/static/cortexit/icons/left.png" height="32px" width="32px"/></a>';
+        }
+
+        var next = document.getElementById("_Next");
+        if (f == nodes.length-1) {
+            next.innerHTML = '&nbsp;';
+        }
+        else {
+            //next.innerHTML = '<button onClick="goNext();">----&gt;</button>';
+            next.innerHTML = '<a href="javascript:goNext()"><img src="/static/cortexit/icons/right.png" height="32px" width="32px"/></a>';
+        }
+        updateFonts();
+        
+        var ex8 = new Animator(
+            {
+                duration: 400,
+                interval: 40,
+                onComplete: function() {
+                }
+            }
+        ).addSubject(
+            new NumericalStyleSubject(
+                content.id,
+                "opacity",
+                0.1,
+                1.0)
+        );
+        ex8.toggle();
+
+    }
+
+    function goPrevious() {
+        if (nodes.length < 2) {
+            return;
+        }
+
+        currentNode--;
+        if (currentNode < 0) currentNode = 0;
+        else
+            showNode(currentNode);
+    }
+
+    function goNext() {
+        if (nodes.length < 2)
+            return;
+
+        currentNode++;
+        if (currentNode > nodes.length-1)
+            currentNode = nodes.length-1;
+        else
+            showNode(currentNode);
+    }
+
+    function updateFont(c) {
+        if (c == null)
+            return;
+        
+        c.style.fontSize = fontSize + "px"; 
+        var e = c.getElementsByTagName("a");
+        for (var i = 0; i < e.length; i++) {
+            e[i].style.fontSize = c.style.fontSize;
+        }        
+        
+    }
+    
+    function updateFonts() {
+        updateFont( document.getElementById("_Content") );
+        updateFont( document.getElementById("_TextZoom") );       
+        updateFont( document.getElementById("_GoInput") );  //TODO this is a hack, use JQuery selector for all input-box classes. see go.html
+    }
+
+    function fontLarger() {
+        fontSize+=5;
+        
+        updateFonts();
+    }
+
+    function fontSmaller() {
+        fontSize-=5;
+        if (fontSize < 1) fontSize = 1;
+
+        updateFonts();
+    }
+
+    function _n(content) {
+        nodes.push(content);
+    }
+
+    function onFrameSpin(e) {
+        var nDelta = 0;
+        if (!e) { // For IE, access the global (window) event object
+            e = window.event;
+        }
+        // cross-bowser handling of eventdata to boil-down delta (+1 or -1)
+        if ( e.wheelDelta ) { // IE and Opera
+            nDelta= e.wheelDelta;
+            if ( window.opera ) {  // Opera has the values reversed
+                nDelta= -nDelta;
+            }
+        }
+        else if (e.detail) { // Mozilla FireFox
+            nDelta= -e.detail;
+        }
+
+        if (nDelta < 0) {
+            //HandleMouseSpin( 1, e.clientX, e.clientY );
+            goPrevious();
+        }
+        if (nDelta > 0) {
+            //HandleMouseSpin( -1, e.clientX, e.clientY );
+            goNext();
+        }
+
+        if ( e.preventDefault ) {  // Mozilla FireFox
+            e.preventDefault();
+        }
+        e.returnValue = false;  // cancel default action
+    }
+    
+
+    //TODO find a way to combine with previous function
+    function onFontSpin(e) {
+        var nDelta = 0;
+        if (!e) { // For IE, access the global (window) event object
+            e = window.event;
+        }
+        // cross-bowser handling of eventdata to boil-down delta (+1 or -1)
+        if ( e.wheelDelta ) { // IE and Opera
+            nDelta= e.wheelDelta;
+            if ( window.opera ) {  // Opera has the values reversed
+                nDelta= -nDelta;
+            }
+        }
+        else if (e.detail) { // Mozilla FireFox
+            nDelta= -e.detail;
+        }
+        if (nDelta > 0) {
+            //HandleMouseSpin( 1, e.clientX, e.clientY );
+            fontLarger();
+        }
+        if (nDelta < 0) {
+            //HandleMouseSpin( -1, e.clientX, e.clientY );
+            fontSmaller();
+        }
+        if ( e.preventDefault ) {  // Mozilla FireFox
+            e.preventDefault();
+        }
+        e.returnValue = false;  // cancel default action
+    }
+
+    function setup() {
+        var panel = document.getElementById("_Panel");
+        var control = document.getElementById("_Control");
+        var content = document.getElementById("_Content");
+        var frameSpin = document.getElementById("Status");
+        var textzoom = document.getElementById("_TextZoom");
+        var font = document.getElementById("_Font");
+
+        if (frameSpin.addEventListener) {
+            frameSpin.addEventListener('DOMMouseScroll', onFrameSpin, false);
+            frameSpin.addEventListener('mousewheel', onFrameSpin, false); // Chrome
+        }
+        else {
+            frameSpin.onmousewheel = onFrameSpin;
+        }
+
+        if (font.addEventListener) {
+            font.addEventListener('DOMMouseScroll', onFontSpin, false);
+            font.addEventListener('mousewheel', onFontSpin, false); // Chrome
+        }
+        else {
+            font.onmousewheel= onFontSpin;
+        }
+
+        content.style.fontSize = fontSize + "px";
+        textzoom.style.fontSize = content.style.fontSize;
+
+
+    }
+
+    function enlargeImage(element, imagesrc) {
+        element.innerHTML = '<img src=\"' + imagesrc + '\"/>';
+    }
+    
+    var qI = 0;
+
+    function addImagesForSelection() {
+        //TODO filter 'q' for useless prepositions like 'the', 'and', etc
+        var selection = selectedText;
+        if (selection == '') {
+            alert('Select some text with which to find images.');
+            return;
+        }
+
+        //images.search.yahoo.com/search/images?p=test
+
+        var iurl = 'http://images.search.yahoo.com/search/images?p=' + escape(selection);
+        
+//        var images = document.getElementById("_Images");
+//        images.innerHTML += '<div class="imageSectionTitle" style="clear: both;">Image results for: ' + selection + '</div><br/>';
+//        images.innerHTML += '<div class="imageSection"><iframe src=\"' + iurl + '\" width="100%" height="400px"></iframe></div>';
+
+        //cframes[currentFrame] += '<div id="x' + qI + '" class="ui-widget-content">';
+        nodes[currentNode] += '<br/><br/><div style="clear: both;">Image results for: ' + selection + '</div><br/>';
+        nodes[currentNode] += '<div class="imageSection"><iframe src=\"' + iurl + '\" width="100%" height="400px"></iframe></div>';
+        //cframes[currentFrame] += '<script>var newFrame = $(\'#x\' +' + qI + '); newFrame.resizable(); newFrame.draggable();';
+        //cframes[currentFrame] += '</div>';
+
+
+        showNode(currentNode);
+        
+        qI++;
+
+    }
+
+    function setTheme(theme) {       
+        currentTheme = theme;
+
+        var c = document.getElementById("themeCSS");
+        c.href = '/static/cortexit/themes/' + theme + '.css';
+        localStorage['theme'] = theme;
+    }
+    
+
+    //Setup escape-key events
+    document.onkeydown = function(e){
+        var keycode;
+        if (e == null) { // ie
+            keycode = event.keyCode;
+        } else { // mozilla
+            keycode = e.which;
+        }
+        
+        if (!editing) {
+            if (keycode == 37) {
+                //left
+                goPrevious();
+            }
+            else if (keycode == 38) {
+                //up
+                fontLarger();
+            }
+            else if (keycode == 39) {
+                //right
+                goNext();
+            }
+            else if (keycode == 40) {
+                //down
+                fontSmaller();
+            }
+        }
+    };
+
+    function onContentMouseOver(e) {
+    }
+    function onContentMouseOut(e) {
+        e.className='';
+    }
+    
+    function setOriginal(o) {
+        pageurl = o;
+    }
+    
+    function visitOriginal() {
+        document.location = pageurl;
+    }
+        
+//    function showHelp() {
+//        $( "#dialog-message" ).dialog({
+//                width: '75%',
+//                modal: true,
+//                buttons: {
+//                        Ok: function() {
+//                                $( this ).dialog( "close" );
+//                        }
+//                }
+//        });        
+//    }
+//    <div id="dialog-message" title="About Cortexit" style="display:none">
+//        <center><iframe src="/static/cortexit/about.html" width="100%" height="400px"></iframe></center>
+//    </div>
+
+
+    var editing = false;
+    function toggleEdit() {
+        //id="_Content" contentEditable="false"        
+        if (editing) {
+            $('#_Content').attr('contentEditable', 'false');
+            editing = false;
+        }
+        else {
+            $('#_Content').attr('contentEditable', 'true');
+            editing = true;
+        }
+    }
+
+
+    function shareIt() {
+        $('#atbutton').css('display', 'inline');
+        //var c = cframes[currentFrame];
+        var c = $('#_Content').text();
+        
+        
+        var tbx = document.getElementById("attb");
+        var svcs = {facebook: 'Facebook', twitter: 'Twitter', blogger: 'Blogger', reddit: 'Reddit', email: 'Email', print: 'Print', googletranslate: 'Translate', expanded: 'More'};
+
+        tbx.innerHTML = '';
+        for (var s in svcs) {
+            tbx.innerHTML += '<a class="addthis_button_'+s+' addthis_32x32_style">'+svcs[s]+'</a>';
+        }
+        
+        var addthis_share = 
+        { 
+            templates: {
+                           twitter: '{{title}} {{url}}'
+                       }
+        };
+                
+        addthis.toolbox("#attb", addthis_share , {url: pageurl, title: c, description: c});
+        addthis.button("#atlink", addthis_share , {url: pageurl, title: c, description: c});
+        
+        $('#attbtext').html( '<b>"' + c + '"</b><br/>' + pageurl + '<hr/>' );
+        
+        $( "#share-modal" ).dialog({
+                width: screen.width * 0.75,
+                height: screen.height * 0.75,
+                modal: true
+        });
+        
+    }
+
+//setup theme
+var currentTheme = localStorage['theme'];
+if (currentTheme == null) {
+    currentTheme = 'default-black';
+}
+setTheme(currentTheme);
+
+$(document).ready(function(){
+      //$('#_Top').fadeToggle();
+      //$('#_Bottom').fadeToggle();
+      $('#_Speech').fadeToggle();    
+});
+
+</script>
+
+<SCRIPT LANGUAGE="JavaScript">
+<!-- Original:  Ronnie T. Moore Web Site:  The JavaScript Source -->
+<!-- This script and many more are available free online at The JavaScript Source!! http://javascript.internet.com -->
+
+var selectedText = "";
+function getActiveText(e) { 
+    // Sets text MSIE or Netscape active text based on browser, puts text in form
+    selectedText = (document.all) ? document.selection.createRange().text : document.getSelection();
+    return true;
+}
+
+document.onmouseup = getActiveText;
+if (!document.all) document.captureEvents(Event.MOUSEUP);
+
+
+</script>
+
+
+<body onload="setup();">
+    
+    <div id="_Top" class="menu">
+            
+        <ul>
+            <li><a href="/go" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/link.png" alt="Go..."/><span>Go...</span></a></li>
+            <li><a href="/support" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/play.png" alt="Play"/><span>Auto-play</span></a></li>
+            <li><a href="/support" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/mode.png" alt="Mode"/><span>Mode</span></a>
+                <ul>
+                    <li><a href="javascript:setMode()">One Sentence</a></li>
+                    <li><a href="javascript:setMode()">Two Sentences</a></li>
+                    <li><a href="javascript:setMode()">One Word</a></li>
+                    <li><a href="javascript:setMode()">Two Words</a></li>
+                    <li><a href="javascript:setMode()">Three Words</a></li>
+                </ul>
+            </li>
+            <li><a href="javascript:toggleSpeech()" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/speak.png" alt="Speak"/><span>Toggle Speech</span></a></li>
+            <li><a href="javascript:addImagesForSelection();" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/picture.png" alt="Images"/><span>Images</span></a></li>
+            <li><a href="#" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/colors.png" title="Theme"/><span>Theme</span></a>
+                <ul>
+                    <li><a href="javascript:setTheme('default-black')">White on Black</a></li>
+                    <li><a href="javascript:setTheme('default-white')">Black on White</a></li>
+                    <li><a href="javascript:setTheme('terminal-green')">Terminal Green</a></li>
+                    <li><a href="javascript:setTheme('earthspace')">Earth Space</a></li>
+                    <li><a href="javascript:setTheme('concrete')">Concrete</a></li>
+                    <li><a href="javascript:setTheme('chalkboard')">Chalkboard</a></li>
+                </ul>
+            </li>
+            <li><a href="/support" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/earth.png" alt="Translate"/><span>Translate</span></a>
+            <li><a href="javascript:toggleEdit();" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/edit.png" alt="Edit"/><span>Edit</span></a>
+            <li><a href="javascript:shareIt();" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/share.png" alt="Share"/><span>Share</span></a>
+            <li><a href="#" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/question.png" alt="Help"/><span>Help</span></a>
+                <ul>
+                    <li><a href="/">What is Cortexit?</a></li>
+                    <li><a href="/bookmarklet">Cortexit Bookmarklet</a></li>
+                    <li><a href="/privacy">Privacy Policy</a></li>
+                    <li><a href="/contact">Contact Us</a></li>
+                    <li><a href="/http://en.wikipedia.org/wiki/HTML5">HTML5</a></li>
+                </ul>
+            </li>
+        </ul>
+        
+        
+    </div>
+    
+    
+    <div id="Return">
+        <a href="javascript:visitOriginal();">X</a>
+    </div>
+		
+    
+    <div id="_Panel">
+        <div id="_TextZoom">
+        </div>
+        <section id="_Content" contentEditable="false" onMouseOver="onContentMouseOver(this);" onMouseOut="onContentMouseOut(this);">
+            <div id="Loading"><center>Loading...</center></div>
+        </section>
+    </div>
+
+    <div id="_Bottom" style="">
+        <table width="100%" id="_Control" border="0">
+            <tr>
+                <td width="10%" align="left" id="_Prev">
+
+                </td>
+                <td width="25%" align="center" id="Status">
+
+                </td>
+                <td width="10%" align="right" id="_Next">
+
+                </td>
+                <td width="10%" align="center">
+                    &nbsp;
+                </td>
+                <td width="10%" align="left">
+                    <a href="javascript:fontSmaller()"><img src="/static/cortexit/icons/minus.png" height="32px" width="32px" title="Smaller Font"/></a>
+                </td>
+                <td width="25%" align="center" id="_Font" >                    
+                    &nbsp; Abc &nbsp;
+                </td>
+                <td width="10%" align="right">
+                    <a href="javascript:fontLarger()"><img src="/static/cortexit/icons/plus.png" height="32px" width="32px" title="Larger Font"/></a>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+    
+    <span id="_Speech">
+    </span>
+    
+    <div id="share-modal" title="Share...">
+        <div id="attbtext"></div>
+        <span id="attb"></span>        
+        <a id="atlink"></a>
+    </div>
+
+</body>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-27001220-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+<!-- <link rel="stylesheet" href="http://static.jquery.com/ui/css/demo-docs-theme/ui.theme.css" type="text/css" media="all" /> -->
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=[PROFILE ID]"></script>

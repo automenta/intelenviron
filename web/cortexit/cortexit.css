@@ -1,0 +1,216 @@
+/* 
+    Document   : cortexit.css
+    Created on : Nov 3, 2011, 12:06:06 PM
+    Author     : me
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/* 
+   TODO customize this sample style
+   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
+*/
+
+root { 
+    display: block;
+}
+
+body {
+    margin: 0%;
+}
+
+.smallLabel {
+    font-size: 16px;
+}
+
+#_Panel {
+    position: absolute;
+    text-align:left;
+    font-family:Arial,Sans;
+    color: white;
+    background-color: black;
+    width:98%;
+    height: 88%;
+    left:1%;
+    top:6%;
+    overflow: auto;
+}
+
+#Loading {
+   background: url('/static/cortexit/icons/loading.gif') no-repeat;
+   background-size: 100%;
+   width: 100%;
+   height: 90%;
+}
+
+#_Content, #_TextZoom {
+    margin: 1%;
+}
+
+#_Images {
+    margin: 3%;
+}
+
+#Status {
+    font-size: 30px;
+    font-family: Arial, Sans;
+    cursor: crosshair;
+}
+#_Font {
+    font-size: 30px;
+    font-family: Arial, Sans;
+    cursor: crosshair;
+}
+
+
+
+
+#_Speech {
+    position: absolute; left: 1%; bottom: 0px; overflow: hidden;
+    background-color: #888;
+    display:none;
+}
+
+
+a, a.visited {
+    color: black;
+    font-family: Arial, Sans;
+}
+
+#Return {
+    position:absolute;
+    top:0;
+    right:1%;    
+}
+
+#Return a {
+    color: gray;
+    font-size: 32px;
+    font-weight: bolder;
+    text-decoration: none;
+}
+
+#_Top {
+    position:absolute;
+    top:0;
+    left:1%;
+}
+
+#_Bottom {
+    overflow: auto;
+    color: white;
+    position: absolute;
+    bottom: 0;
+    right: 1%;
+    width: 48%;     
+}
+
+
+
+.menu{
+    border:none;
+    border:0px;
+    margin:0px;
+    padding:0px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+
+#_Control {
+    font-family: Arial, Sans;
+}
+
+a {
+    color: white;
+}
+
+
+
+.menu ul{
+    background: transparent;
+    height:35px;
+    list-style:none;
+    margin:0;
+    padding:0;
+}
+.menu li{
+    float:left;
+    padding:0px;
+}
+.menu li a{
+    color:#cccccc;
+    display:block;
+    font-weight:normal;
+    line-height:35px;
+    margin:0px;
+    padding:0px 25px;
+    text-align:center;
+    text-decoration:none;
+}
+.menu li a:hover, .menu ul li:hover a{
+    background: #2580a2 url("/static/cortexit/images/hover.gif") bottom center no-repeat;
+    color:#FFFFFF;
+    text-decoration:none;
+}
+.menu li ul{
+    background:#333333;
+    display:none;
+    height:auto;
+    padding:0px;
+    margin:0px;
+    border:0px;
+    position:absolute;
+    width:225px;
+    z-index:200;
+    /*top:1em;
+    /*left:0;*/
+}
+.menu li:hover ul{
+    display:block;
+
+}
+.menu li li {
+    background:url('/static/cortexit/images/sub_sep.gif') bottom left no-repeat;
+    display:block;
+    float:none;
+    margin:0px;
+    padding:0px;
+    width:225px;
+}
+.menu li:hover li a{
+    background:none;
+
+}
+.menu li ul a{
+    display:block;
+    height:35px;
+    font-size:18px;
+    font-style:normal;
+    margin:0px;
+    padding:0px 10px 0px 15px;
+    text-align:left;
+}
+.menu li ul a:hover, .menu li ul li:hover a{
+    background:#2580a2 url('/static/cortexit/images/hover_sub.gif') center left no-repeat;
+    border:0px;
+    color:#ffffff;
+    text-decoration:none;
+}
+.menu p{
+    clear:left;
+}	
+
+a:hover {text-decoration:none;} /*BG color is a must for IE6*/
+a.tooltip span {display:none; padding:2px 3px; margin-left:-70px; margin-top: 0px; width:140px; z-index: 400;}
+a.tooltip:hover span{display:inline; position:absolute; color:#fff;}
+
+/* a.tooltipAbove span {display:none; margin-left:-200px;  margin-bottom: 60px; width:300px; font-size: 14px; }
+a.tooltipAbove:hover span{display:inline; position:absolute;  color:white;} */
+
+
+.imageSection {
+    width: 75%;
+    float: right;
+    margin-bottom: 15px;
+}
