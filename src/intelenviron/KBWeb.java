@@ -15,9 +15,12 @@ import spark.Response;
 import spark.Route;
 import static spark.Spark.*;
 import static intelenviron.Web.*;
+import intelenviron.neo4j.KBLoader;
 import intelenviron.neo4j.KBNode;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.neo4j.graphdb.Direction;
@@ -46,6 +49,7 @@ public class KBWeb {
         
     }
     
+    
     public static class NodeSummary {
         public final long id;
         public final String name;
@@ -54,6 +58,7 @@ public class KBWeb {
         public List<NodeSummary> outs = null;
         public RelationshipSummary via = null;
         private transient final Node node;
+        private Map<String,String> prop = null;
 
         public NodeSummary(Node node, long id, String name, Date modified) {
             this.node = node;
@@ -68,7 +73,7 @@ public class KBWeb {
                     return null;
             
             final String id = Long.toString(x.getId());
-            final String name = x.getProperty("id", id).toString();
+            final String name = x.getProperty("name", x.getProperty("id", id)).toString();
 
             Date d = null;
             Object o = x.getProperty("when", null);
@@ -91,6 +96,13 @@ public class KBWeb {
             return get(n, null);
         }
                 
+        public NodeSummary withProperties() {
+            prop = new HashMap();
+            for (String key : node.getPropertyKeys()) {
+                 prop.put(key, node.getProperty(key).toString());
+            }
+            return this;
+        }
         public NodeSummary withNeighbors(KB kb) {
             ins = new LinkedList();
             outs = new LinkedList();
@@ -145,6 +157,20 @@ public class KBWeb {
                 });
             }
         });
+        get(new Route("/node/:id/json") {
+
+            @Override
+            public Object handle(Request rqst, Response rspns) {
+                Long id = Long.parseLong(rqst.params(":id"));
+
+                String nodeData = gson.toJson(
+                            NodeSummary.get(kb, id).withNeighbors(kb).withProperties()
+                        );
+
+                jsonHeader(rspns);
+                return nodeData;
+            }            
+        });
         get(new Route("/node/:id") {
 
             @Override
@@ -153,7 +179,7 @@ public class KBWeb {
                     Long id = Long.parseLong(rqst.params(":id"));
                     
                     String nodeData = gson.toJson(
-                                NodeSummary.get(kb, id).withNeighbors(kb)
+                                NodeSummary.get(kb, id).withNeighbors(kb).withProperties()
                             );
                     
                     htmlHeader(rspns);
@@ -172,6 +198,28 @@ public class KBWeb {
                     return ex.toString();
                 }
             }            
+        });
+        
+        get(new Route("/read/rss/*") {
+
+            @Override
+            public Object handle(Request rqst, Response rspns) {
+                htmlHeader(rspns);
+                
+                String url = rqst.pathInfo();
+                String rssURL = url.substring("/read/rss/".length() );
+                
+                try {
+                    //TODO add a callback for live response
+                    new KBLoader(kb).loadRSS(rssURL);
+                } catch (Exception ex) {
+                    Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
+                    return ex.toString();
+                }
+                
+                return null;
+            }
+            
         });
     }
     

@@ -30,14 +30,21 @@ public class KBLoader {
         Session.init();
     }
 
+    final KB kb;
     final static Twitter twitter = TwitterFactory.getSingleton();
-    final static KB kb = new KB(); //new KB("/home/me/neo4j-enterprise-1.8.M02/data");
     public static final Calais calais = new Calais();
     public static final RssParser rss = new RssParser();
 
-    final public static RelationshipType AUTHOR = kb.getType("authors");
-    final public static RelationshipType MENTIONS = kb.getType("mentions");
-    
+    final public RelationshipType CREATES;
+    final public RelationshipType MENTIONS;
+    final public RelationshipType NEXT;
+
+    public KBLoader(KB kb) {
+        this.kb = kb;
+        CREATES = kb.getType("creates");
+        MENTIONS = kb.getType("mentions");
+        NEXT = kb.getType("next");
+    }
     
     
     public interface Transactable {
@@ -101,7 +108,7 @@ public class KBLoader {
         return kb.getNode(Media.class, url);
     }
     
-    public static void addStatus(final KB kb, final Status s) {
+    public Node addStatus(final KB kb, final Status s, final Node previous) {
         
         final Node author = getUser(kb, s.getUser());
         
@@ -113,21 +120,25 @@ public class KBLoader {
                 n.setProperty("content", s.getText());
                 if (s.getGeoLocation()!=null)
                     n.setProperty("where", s.getGeoLocation().getLatitude()+ "," + s.getGeoLocation().getLongitude());
-                for (org.neo4j.graphdb.Relationship r : author.getRelationships( AUTHOR )) {
+                for (org.neo4j.graphdb.Relationship r : author.getRelationships( CREATES )) {
                     if (r.getEndNode().getId() == n.getId())
                         r.delete();
                 }
-                kb.relateOnce(author, n, AUTHOR);
+                kb.relateOnce(author, n, CREATES);
                 
-                calais.apply(kb, n, s.getText());
+                if (previous!=null)
+                    kb.relateOnce(previous, n, NEXT);
+                
+                calais.apply(kb, KBLoader.this, n, s.getText());
                 
             }
             
         });
         
+        return n;
         
     }
-    public static void addTweet(final KB kb, final Tweet s) {
+    public void addTweet(final KB kb, final Tweet s) {
         
         final Node author = getUser(kb, s);
         
@@ -139,11 +150,11 @@ public class KBLoader {
                 n.setProperty("content", s.getText());
                 if (s.getGeoLocation()!=null)
                     n.setProperty("where", s.getGeoLocation().getLatitude()+ "," + s.getGeoLocation().getLongitude());
-                for (org.neo4j.graphdb.Relationship r : author.getRelationships( AUTHOR )) {
+                for (org.neo4j.graphdb.Relationship r : author.getRelationships( CREATES )) {
                     if (r.getEndNode().getId() == n.getId())
                         r.delete();
                 }
-                kb.relateOnce(author, n, AUTHOR);
+                kb.relateOnce(author, n, CREATES);
 
                 if (s.getUserMentionEntities()!=null)
                     for (UserMentionEntity u : s.getUserMentionEntities()) {
@@ -161,7 +172,7 @@ public class KBLoader {
                         kb.relateOnce(n, media, MENTIONS);
                     }
 
-                calais.apply(kb, n, s.getText());
+                calais.apply(kb, KBLoader.this, n, s.getText());
             }
             
         });
@@ -169,33 +180,33 @@ public class KBLoader {
         
     }
     
-    public static void addTimeline(KB kb, String username) throws TwitterException {
+    public void addTimeline(KB kb, String username) throws TwitterException {
         ResponseList<Status> tt = twitter.getUserTimeline(username);
+        Node previousStatus = null;
         for (int i = 0; i < tt.size(); i++) {
             Status s = tt.get(i);
-            addStatus(kb, s);
+            previousStatus = addStatus(kb, s, previousStatus);
         }
     }
-    public static void addSearch(KB kb, String query) throws TwitterException {
+    public void addSearch(KB kb, String query) throws TwitterException {
         QueryResult tt = twitter.search(new Query(query));
         for (Tweet t : tt.getTweets()) {
             addTweet(kb, t);
         }
     }
 
-    public static void loadRSS(String rssURL) {
-        try {
+    public void loadRSS(String rssURL) throws Exception {
 
             final RssFeed feed = rss.load(rssURL);
 
             // Gets the channel information of the feed and 
             // display its title
             RssChannelBean channel = feed.getChannel();
-            System.out.println("Feed Title: " + channel.getTitle());
+            //System.out.println("Feed Title: " + channel.getTitle());
 
             // Gets the image of the feed and display the image URL
             RssImageBean image = feed.getImage();
-            System.out.println("Feed Image: " + image.getUrl());
+            //System.out.println("Feed Image: " + image.getUrl());
 
             Node n = kb.getNode(RssFeed.class, feed.getChannel().getLink(), new KBLoader.Transactable() {
 
@@ -214,8 +225,16 @@ public class KBLoader {
                 //System.out.println("Desc.: " + item.getDescription());
                 final String cleanText = Jsoup.clean(item.getDescription(), Whitelist.simpleText());
 
-                final CalaisResponse cr = calais.analyze(cleanText);
+                CalaisResponse cr;
+                try {
+                    cr = calais.analyze(cleanText);
+                }
+                catch (IllegalArgumentException e) {
+                    cr = null;
+                }
+                        
 
+                final CalaisResponse crr = cr;
 
                 Node x = kb.getNode(Document.class, item.getLink(), new KBLoader.Transactable() {
 
@@ -229,36 +248,34 @@ public class KBLoader {
                         n.setProperty("category", item.getCategory());
                         n.setProperty("author", item.getAuthor());
 
-                        calais.apply(kb, n, cr);
+                        if (crr!=null)
+                            calais.apply(kb, KBLoader.this, n, crr);
 
                     }
                 });
-                kb.relateOnce(n, x, KBLoader.AUTHOR);
+                kb.relateOnce(n, x, CREATES);
             }
 
-        } catch (Exception e) {
-            // Something to do if an exception occurs
-        }
 
     }
     
-    public static void main(String[] args) throws Exception {
-        
-//        ResponseList<Trends> tr = twitter.getDailyTrends();
-//        for (int i = 0; i < tr.size(); i++) {
-//            Trends tt = tr.get(i);
-//            for (Trend ttt : tt.getTrends()) {
-//                addTrend(kb, ttt, tt.getTrendAt(), tt.getLocation());
-//            }
-//        }
-        
-        
-        //addTimeline(kb, "enformable");
-        //addTimeline(kb, "automenta");
-        addSearch(kb, "artificial intelligence");
-        //System.out.println(kb.graph.index().getNodeAutoIndexer().getAutoIndex());
-        
-        kb.shutdown();
-        
-    }
+//    public static void main(String[] args) throws Exception {
+//        
+////        ResponseList<Trends> tr = twitter.getDailyTrends();
+////        for (int i = 0; i < tr.size(); i++) {
+////            Trends tt = tr.get(i);
+////            for (Trend ttt : tt.getTrends()) {
+////                addTrend(kb, ttt, tt.getTrendAt(), tt.getLocation());
+////            }
+////        }
+//        
+//        
+//        //addTimeline(kb, "enformable");
+//        //addTimeline(kb, "automenta");
+//        addSearch(kb, "artificial intelligence");
+//        //System.out.println(kb.graph.index().getNodeAutoIndexer().getAutoIndex());
+//        
+//        kb.shutdown();
+//        
+//    }
 }

@@ -22,9 +22,12 @@ public class TestAddRSS {
 
 
     public static void main(String[] args) throws Exception {
-//        KBLoader.loadRSS("http://enformable.com/category/foia/feed/");
-//        KBLoader.loadRSS("http://enformable.com/feed/");
-        KBLoader.loadRSS("https://news.google.com/news/feeds?pz=1&cf=all&ned=us&hl=en&q=Nuclear&output=rss");
-//        KBLoader.addTimeline(kb, "enformable");
+        new KBLoader(kb).loadRSS("http://rss.cnn.com/rss/cnn_topstories.rss");
+//        KBLoader.loadRSS("https://news.google.com/news/feeds?pz=1&cf=all&ned=us&hl=en&q=Nuclear&output=rss");
+        //new KBLoader(kb).addTimeline(kb, "marianasoffer");
+        
+        new KBLoader(kb).addTimeline(kb, "automenta");
+        new KBLoader(kb).addTimeline(kb, "enformable");
+        
     }
 }

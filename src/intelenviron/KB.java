@@ -20,6 +20,7 @@ import org.neo4j.rest.graphdb.RestGraphDatabase;
  */
 public class KB {
     public static final String ID = "id";
+    public static final String NAME = "name";
     
     public final GraphDatabaseService graph;
     private Index<Node> nodeIndex;
@@ -49,20 +50,23 @@ public class KB {
 //        return td.traverse( graph.getReferenceNode() );
 //    }
     
-    public static Relationship relateOnce(final Node from, final Node to, final RelationshipType type) {
-        for (final Relationship r : from.getRelationships(type)) {
-            if (r.getEndNode().getId() == to.getId())
-                return r;
+    public Relationship relateOnce(final Node from, final Node to, final RelationshipType type) {
+        Iterable<Relationship> rr = from.getRelationships(type);
+        if (rr != null) {
+            for (final Relationship r : rr) {
+                if (r.getEndNode().getId() == to.getId())
+                    return r;
+            }
         }
         return from.createRelationshipTo(to, type);
     }
     
-    public Node newNode(Class c, String id) {        
+    
+    public Node newNode(Class c, String id) {
         Node n = graph.createNode();
-        relateOnce(graph.getReferenceNode(), n, getType(c));
         n.setProperty(ID, c.getSimpleName() + "." +id);
+        n.setProperty(NAME, id);
         
-        //nodeIndex.putIfAbsent(n, ID, id);
         return n;
     }
     

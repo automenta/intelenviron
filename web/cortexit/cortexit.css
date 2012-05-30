@@ -35,6 +35,41 @@ body {
     top:6%;
     overflow: auto;
 }
+#_Content {
+    margin: 1%;
+    opacity: 0;
+    -webkit-transition: opacity 0.5s ease-in-out; //for chrome, safari
+    -moz-transition: opacity 0.5s ease-in-out; //for mozilla firefox
+    -o-transition: opacity 0.5s ease-in-out; //for opera
+}
+
+#neighborTable {
+    color: gray;
+    width: 100%;
+}
+.neighborhooditem {
+    margin: 0;
+    padding: 0.2em;
+}
+
+.neighbor_summary_out {
+    background-color: #005;
+}
+.neighbor_summary_out:nth-child(odd) {
+    background-color: #007;
+}
+.neighbor_summary_in {
+    background-color: #500;
+}
+.neighbor_summary_in:nth-child(odd) {
+    background-color: #700;
+}
+.neighbor_summary_prop {
+    background-color: #050;
+}
+.neighbor_summary_prop:nth-child(odd) {
+    background-color: #070;
+}
 
 #Loading {
    background: url('/static/cortexit/icons/loading.gif') no-repeat;
@@ -43,8 +78,13 @@ body {
    height: 90%;
 }
 
-#_Content, #_TextZoom {
-    margin: 1%;
+
+#mainContent {
+    margin-bottom: 1em;
+}
+
+#propertyContent {
+    margin-bottom: 1em;
 }
 
 #_Images {

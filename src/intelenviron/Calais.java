@@ -69,14 +69,14 @@ public class Calais {
 
     }
 
-    public void apply(final KB kb, Node n, CalaisResponse cr) {
+    public void apply(final KB kb, final KBLoader kbLoader, Node n, CalaisResponse cr) {
         n.setProperty("calais.info", cr.getInfo());
 
         for (CalaisObject o : cr.getEntities()) {
             //System.out.println("Entity: " + o);   
             String entityName = o.getField("name");
             Node tag = KBLoader.getTag(kb, entityName);
-            Relationship t = kb.relateOnce(n, tag, KBLoader.MENTIONS);
+            Relationship t = kb.relateOnce(n, tag, kbLoader.MENTIONS);
             double relevance = Double.parseDouble(o.getField("relevance"));
             t.setProperty("relevance", relevance);
             t.setProperty("type", o.getField("_type"));
@@ -86,24 +86,25 @@ public class Calais {
             String categoryName = o.getField("categoryName");
             Node cat = KBLoader.getTag(kb, categoryName);
             
-            Relationship t = kb.relateOnce(n, cat, KBLoader.MENTIONS);
-            t.setProperty("relevance", Double.parseDouble(o.getField("score")));
+            Relationship t = kb.relateOnce(n, cat, kbLoader.MENTIONS);
+            if (o.getField("score")!=null)
+                t.setProperty("relevance", Double.parseDouble(o.getField("score")));
             //System.out.println("Topics: " + o);
         }
         for (CalaisObject o : cr.getRelations()) {
-            System.out.println("Relations: " + o);
+            //System.out.println("Relations: " + o);
         }
         for (CalaisObject o : cr.getSocialTags()) {
             //System.out.println("Social Tags: " + o);     
             String tagName = o.getField("name");
             Node tag = KBLoader.getTag(kb, tagName);
-            kb.relateOnce(n, tag, KBLoader.MENTIONS);
+            kb.relateOnce(n, tag, kbLoader.MENTIONS);
         }
     }
 
-    public void apply(KB kb, Node n, String text) {
+    public void apply(KB kb, KBLoader kbLoader, Node n, String text) {
         try {
-            apply(kb, n, analyze(text));
+            apply(kb, kbLoader, n, analyze(text));
         } catch (IOException ex) {
             Logger.getLogger(Calais.class.getName()).log(Level.SEVERE, null, ex);
         }

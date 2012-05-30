@@ -1,6 +1,5 @@
 <link rel="stylesheet" type="text/css" href="/static/cortexit/cortexit.css" />
 <link rel="shortcut icon" href="/static/cortexit/favicon.ico" />
-<script type='text/javascript' src='/static/cortexit/animator.js'></script>
 
 <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/base/jquery-ui.css" type="text/css" media="all" />
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
@@ -17,6 +16,8 @@
     var nodes = [];
     var currentNode;
     var speechEnabled = false;
+    var prevID = null;
+    var nextID = null;
 
     function enableSpeech(line) {
         speechEnabled = true;
@@ -54,47 +55,85 @@
         }
     }
 
+    function renderMainContent(node) {
+        var content = node.prop['content'];
+        if (content == null)
+            content = '';
+        
+        var line = '<div id="mainContent"><strong>' + node.name +  '</strong><br/>' + content + '</div>';
+        return line;
+    }
+    function renderNeighborhood(node) {
+        var line = '<table id="neighborTable"><tr>';
+        if (node.ins.length > 0) {
+            line = line + '<td width="30%" style="vertical-align:top">';
+            for (var ii in node.ins) {
+                var xi = node.ins[ii];
+                var id = xi.id;
+                var name = xi.name;
+                var relationship = '';
+                if (xi.via!=null) {
+                    relationship = xi.via.name;
+                }
+                var r = '<p class="neighborhooditem neighbor_summary_in"><a href="/node/' + id +'">' + name + '</a> -> ' + relationship + '</p>';
+                line = line + r;
+            }
+            line = line + '</td>';
+        }
+
+        var numProperties = 0;
+        for (var id in node.prop) {
+            if (id == 'content') continue;
+            if (id == 'name') continue;
+            if (id == 'id') continue;
+            numProperties++;
+        }
+        
+        if (numProperties > 0) {
+            line = line + '<td width="30%" style="vertical-align:top">';
+            for (var id in node.prop) {   
+                if (id == 'content') continue;
+                if (id == 'name') continue;
+                if (id == 'id') continue;
+                
+                var value = node.prop[id];
+                var r = '<p class="neighborhooditem neighbor_summary_prop"><a href="/property/' + id +'">' + id + '</a>: ' + value + '</p>';
+                line = line + r;
+            }
+            line = line + '</td>';
+        }
+        if (node.outs.length > 0) {
+            line = line + '<td width="30%" style="vertical-align:top">';
+            for (var ii in node.outs) {
+                var xi = node.outs[ii];
+                var id = xi.id;
+                var name = xi.name;
+                var relationship = '';
+                if (xi.via!=null) {
+                    relationship = xi.via.name;
+                }
+                var r = '<p class="neighborhooditem neighbor_summary_out">' + relationship + ' -> <a href="/node/' + id +'">' + name + '</a></p>';
+                line = line + r;
+            }
+            line = line + '</td>';
+        }
+        line = line + '</tr></table>';
+        return line;
+        
+    }
+    
     function showNode(f) {
         
         disableSpeech();
 
+        currentNode = nodes[f];
+        
         var content = document.getElementById("_Content");
-        content.style.opacity = 0;
-        
+        content.innerHTML = renderMainContent(currentNode);
 
-        var line = nodes[f].name;
-        
-        if (nodes[f].ins != null) {
-            for (var ii in nodes[f].ins) {
-                var xi = nodes[f].ins[ii];
-                var id = xi.id;
-                var name = xi.name;
-                var relationship = '';
-                if (xi.via!=null) {
-                    relationship = xi.via.name;
-                }
-                var r = '<p><a href="/node/' + id +'">' + name + '</a> -> ' + relationship + '</p>';
-                line = line + r;
-            }
-        }
-        if (nodes[f].outs != null) {
-            for (var ii in nodes[f].outs) {
-                var xi = nodes[f].outs[ii];
-                var id = xi.id;
-                var name = xi.name;
-                var relationship = '';
-                if (xi.via!=null) {
-                    relationship = xi.via.name;
-                }
-                var r = '<p>' + relationship + ' -> <a href="/node/' + id +'">' + name + '</a></p>';
-                line = line + r;
-            }
-        }
-        
-        content.innerHTML = line;
+        var neighbor = document.getElementById("Neighborhood");
+        neighbor.innerHTML = renderNeighborhood(currentNode);
 
-        var status = document.getElementById("Status");
-        status.innerHTML = (f+1) + '/' + nodes.length;
 
         var prev = document.getElementById("_Prev");
         if (f == 0) {
@@ -112,46 +151,76 @@
             //next.innerHTML = '<button onClick="goNext();">----&gt;</button>';
             next.innerHTML = '<a href="javascript:goNext()"><img src="/static/cortexit/icons/right.png" height="32px" width="32px"/></a>';
         }
+
+        prevID = nextID = null;
+        
+        for (var ii in currentNode.ins) {
+            var xi = currentNode.ins[ii];
+            var id = xi.id;
+            var relationship = '';
+            if (xi.via!=null) {
+                relationship = xi.via.name;
+            }
+            if (relationship == 'next')
+                prevID = id;
+        }
+        for (var ii in currentNode.outs) {
+            var xi = currentNode.outs[ii];
+            var id = xi.id;
+            var relationship = '';
+            if (xi.via!=null) {
+                relationship = xi.via.name;
+            }
+            if (relationship == 'next')
+                nextID = id;
+        }
+        var status = document.getElementById("Status");
+        status.innerHTML = ((prevID!=null) ? "<--" : "") + " | " + ((nextID!=null) ? "-->" : "");
+        
         updateFonts();
         
-        var ex8 = new Animator(
-            {
-                duration: 400,
-                interval: 40,
-                onComplete: function() {
-                }
-            }
-        ).addSubject(
-            new NumericalStyleSubject(
-                content.id,
-                "opacity",
-                0.1,
-                1.0)
-        );
-        ex8.toggle();
+//        var ex8 = new Animator(
+//            {
+//                duration: 400,
+//                interval: 40,
+//                onComplete: function() {
+//                }
+//            }
+//        ).addSubject(
+//            new NumericalStyleSubject(
+//                content.id,
+//                "opacity",
+//                0.1,
+//                1.0)
+//        );
+//        ex8.toggle();
+
+        $("#_Content").css({ opacity: 1.0 });
 
     }
 
     function goPrevious() {
-        if (nodes.length < 2) {
-            return;
-        }
+        //TODO update through AJAX to avoid reloading entire page
+        if (prevID!=null)
+           setNode(prevID);
 
-        currentNode--;
-        if (currentNode < 0) currentNode = 0;
-        else
-            showNode(currentNode);
     }
 
     function goNext() {
-        if (nodes.length < 2)
-            return;
-
-        currentNode++;
-        if (currentNode > nodes.length-1)
-            currentNode = nodes.length-1;
-        else
-            showNode(currentNode);
+        //TODO update through AJAX to avoid reloading entire page
+        if (nextID!=null)
+           setNode(nextID);
+    }
+    
+    function setNode(id) {
+        $("#_Content").css({ opacity: 0 });
+        $.getJSON('/node/' + id + '/json', function(data) {
+            nodes = []
+            _n(data);
+            window.history.pushState(id, '', '/node/' + id);
+            showNode(0);
+        });    
+        
     }
 
     function updateFont(c) {
@@ -167,8 +236,8 @@
     }
     
     function updateFonts() {
-        updateFont( document.getElementById("_Content") );
-        updateFont( document.getElementById("_TextZoom") );       
+        //updateFont( document.getElementById("_Content") );
+        updateFont( document.getElementById("mainContent") );       
         updateFont( document.getElementById("_GoInput") );  //TODO this is a hack, use JQuery selector for all input-box classes. see go.html
     }
 
@@ -256,7 +325,6 @@
         var control = document.getElementById("_Control");
         var content = document.getElementById("_Content");
         var frameSpin = document.getElementById("Status");
-        var textzoom = document.getElementById("_TextZoom");
         var font = document.getElementById("_Font");
 
         if (frameSpin.addEventListener) {
@@ -275,8 +343,8 @@
             font.onmousewheel= onFontSpin;
         }
 
-        content.style.fontSize = fontSize + "px";
-        textzoom.style.fontSize = content.style.fontSize;
+        //content.style.fontSize = fontSize + "px";
+        //textzoom.style.fontSize = content.style.fontSize;
 
 
     }
@@ -470,8 +538,8 @@ if (!document.all) document.captureEvents(Event.MOUSEUP);
     <div id="_Top" class="menu">
             
         <ul>
-            <li><a href="/go" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/link.png" alt="Go..."/><span>Go...</span></a></li>
-            <li><a href="/support" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/play.png" alt="Play"/><span>Auto-play</span></a></li>
+            <!-- <li><a href="/go" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/link.png" alt="Go..."/><span>Go...</span></a></li> 
+            
             <li><a href="/support" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/mode.png" alt="Mode"/><span>Mode</span></a>
                 <ul>
                     <li><a href="javascript:setMode()">One Sentence</a></li>
@@ -481,6 +549,7 @@ if (!document.all) document.captureEvents(Event.MOUSEUP);
                     <li><a href="javascript:setMode()">Three Words</a></li>
                 </ul>
             </li>
+            -->
             <li><a href="javascript:toggleSpeech()" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/speak.png" alt="Speak"/><span>Toggle Speech</span></a></li>
             <li><a href="javascript:addImagesForSelection();" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/picture.png" alt="Images"/><span>Images</span></a></li>
             <li><a href="#" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/colors.png" title="Theme"/><span>Theme</span></a>
@@ -517,16 +586,19 @@ if (!document.all) document.captureEvents(Event.MOUSEUP);
 		
     
     <div id="_Panel">
-        <div id="_TextZoom">
-        </div>
         <section id="_Content" contentEditable="false" onMouseOver="onContentMouseOver(this);" onMouseOut="onContentMouseOut(this);">
             <div id="Loading"><center>Loading...</center></div>
         </section>
+        <section id="Neighborhood" style="display:none">
+        </section>            
     </div>
 
     <div id="_Bottom" style="">
         <table width="100%" id="_Control" border="0">
             <tr>
+                <td width="10%" align="left" id="ToggleNeighborhood">
+                    <a href="#" onClick="$('#Neighborhood').toggle();">Neighborhood</a>
+                </td>
                 <td width="10%" align="left" id="_Prev">
 
                 </td>
