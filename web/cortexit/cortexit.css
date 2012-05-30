@@ -42,7 +42,14 @@ body {
     -moz-transition: opacity 0.5s ease-in-out; //for mozilla firefox
     -o-transition: opacity 0.5s ease-in-out; //for opera
 }
-
+#Neighborhood {
+    left:2.5%;
+    bottom: 5%;
+    position: fixed;
+    width: 95%;
+    z-index: 10;  
+    //pointer-events:none; //allows clicks to pass through the transparency of this overlay
+}
 #neighborTable {
     color: gray;
     width: 100%;
@@ -117,18 +124,6 @@ a, a.visited {
     font-family: Arial, Sans;
 }
 
-#Return {
-    position:absolute;
-    top:0;
-    right:1%;    
-}
-
-#Return a {
-    color: gray;
-    font-size: 32px;
-    font-weight: bolder;
-    text-decoration: none;
-}
 
 #_Top {
     position:absolute;
@@ -247,10 +242,3 @@ a.tooltip:hover span{display:inline; position:absolute; color:#fff;}
 
 /* a.tooltipAbove span {display:none; margin-left:-200px;  margin-bottom: 60px; width:300px; font-size: 14px; }
 a.tooltipAbove:hover span{display:inline; position:absolute;  color:white;} */
-
-
-.imageSection {
-    width: 75%;
-    float: right;
-    margin-bottom: 15px;
-}

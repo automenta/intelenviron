@@ -61,7 +61,12 @@ public class Web {
 
     //TODO should this be synchronized or a threadpool?
     public static void getStaticBinaryFile(String path, OutputStream os, String append) throws IOException {
-        FileInputStream in = new FileInputStream(new File("./web/" + path));
+        File f = new File("./web/" + path);
+        if (!f.exists()) {
+            return;
+        }
+        
+        FileInputStream in = new FileInputStream(f);
 
         int count = 0;
         while ((count = in.read(buf)) >= 0) {
@@ -147,6 +152,9 @@ public class Web {
     public static void jsonHeader(final Response rspns) {
         rspns.header("Content-type", "application/json");        
     }
+    public static void jsHeader(final Response rspns) {
+        rspns.header("Content-type", "application/javascript");        
+    }
     
     
     //http://blog.stevensanderson.com/2008/08/25/using-the-browsers-native-login-prompt/
@@ -166,16 +174,17 @@ public class Web {
         
         requireAuthentication("/");
 
-        get(new Route("/") {
-
-            @Override
-            public Object handle(Request rqst, Response rspns) {
-                //rspns.header("Content-type", "text/html");
-                        
-                return "welcome";
-            }
-            
-        });
+//        get(new Route("/") {
+//
+//            @Override
+//            public Object handle(Request rqst, Response rspns) {
+//                //rspns.header("Content-type", "text/html");
+//                        
+//                return "welcome";
+//            }
+//            
+//        });
+        
         get(new Route("/log") {
 
             @Override
@@ -187,6 +196,11 @@ public class Web {
                 return "<html><pre>" + result + "</pre></html>";
             }
             
+        });
+        get(new Route("/favicon.ico") {
+            @Override public Object handle(Request rqst, Response rspns) {
+                return "";
+            }            
         });
         get(new Route("/static/*") {
 

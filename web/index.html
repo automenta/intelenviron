@@ -2,7 +2,7 @@
 
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/cortexit/cortexit.css" />
-<link rel="stylesheet" type="text/css" href="/static/cortexit/themes/default-black.css" />
+<link rel="stylesheet" type="text/css" href="/static/themes/default-black.css" />
 <style>
     body {
         font-family: sans-serif;
@@ -15,10 +15,17 @@
         border-right: black solid 1px;
         height: 100%;
     }
-    #right {
-        width: 74%;
+    #_Panel {
+        width: 73%;
         float:  right;
         scrolls: auto;
+        margin: 0;
+        position: relative;
+        top: 0;
+        left: 0;
+    }
+    #_Content {
+        opacity: 1;        
     }
     
     div.channelFocusable {
@@ -26,13 +33,16 @@
         cursor: pointer;
         font-size: 150%;
         line-height: 150%;
+        color: black;
     }
     div.channelFocusable:hover {
         background-color: #eee;
+        color:black;
     }
     
-    .channelFocused {
+    div.channelFocused {
         background-color: #ccc;
+        color: black;
     }
     #menu {
         background-color: #333;
@@ -137,7 +147,7 @@
     }
     
     function updateChannel(c) {
-        var r = $('#right');
+        var r = $('#_Content');
         r.empty();
         
         f = function(x) {
@@ -147,11 +157,9 @@
                 var p = x[i];
                 if (p==null) continue;
                 
-                r.append('<h1>' + p['name'] + '</h1>');
+                r.append('<a href="/node/' + p['id'] + '"><h1>' + p['name'] + '</h1></a>');
                 r.append(p['description']);
-                r.append('<a href="/node/' + p['id'] + '"> [more...]</a>');
-                if (i!=n-1)
-                    r.append('<hr/>');
+                r.append("<br/>");
             }
         };
         
@@ -172,7 +180,9 @@
         <div id="menu"></div>
         <div id="left">
         </div>
-        <div id="right">
+        <div id="_Panel">
+            <div id="_Content">
+            </div>           
         </div>
     </body>
 </html>

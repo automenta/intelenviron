@@ -85,7 +85,6 @@ public class KB {
         RestGraphDatabase rg;
         graph = rg = new RestGraphDatabase("http://localhost:7474/db/data");        
         
-        
         if (graph.index()!=null) {
             nodeIndex = graph.index().forNodes( "node_auto_index" );            
         }

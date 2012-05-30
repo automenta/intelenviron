@@ -1,5 +1,5 @@
 <link rel="stylesheet" type="text/css" href="/static/cortexit/cortexit.css" />
-<link rel="shortcut icon" href="/static/cortexit/favicon.ico" />
+<!--<link rel="shortcut icon" href="/static/cortexit/favicon.ico" />-->
 
 <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/base/jquery-ui.css" type="text/css" media="all" />
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
@@ -66,7 +66,7 @@
     function renderNeighborhood(node) {
         var line = '<table id="neighborTable"><tr>';
         if (node.ins.length > 0) {
-            line = line + '<td width="30%" style="vertical-align:top">';
+            line = line + '<td width="30%" style="vertical-align:bottom">';
             for (var ii in node.ins) {
                 var xi = node.ins[ii];
                 var id = xi.id;
@@ -90,7 +90,7 @@
         }
         
         if (numProperties > 0) {
-            line = line + '<td width="30%" style="vertical-align:top">';
+            line = line + '<td width="30%" style="vertical-align:bottom">';
             for (var id in node.prop) {   
                 if (id == 'content') continue;
                 if (id == 'name') continue;
@@ -103,7 +103,7 @@
             line = line + '</td>';
         }
         if (node.outs.length > 0) {
-            line = line + '<td width="30%" style="vertical-align:top">';
+            line = line + '<td width="30%" style="vertical-align:bottom">';
             for (var ii in node.outs) {
                 var xi = node.outs[ii];
                 var id = xi.id;
@@ -140,7 +140,7 @@
             prev.innerHTML = '&nbsp;';
         }
         else {
-            prev.innerHTML = '<a href="javascript:goPrevious()"><img src="/static/cortexit/icons/left.png" height="32px" width="32px"/></a>';
+            prev.innerHTML = '<a href="javascript:goPrevious()"><img src="/static/icons/left.png" height="32px" width="32px"/></a>';
         }
 
         var next = document.getElementById("_Next");
@@ -149,7 +149,7 @@
         }
         else {
             //next.innerHTML = '<button onClick="goNext();">----&gt;</button>';
-            next.innerHTML = '<a href="javascript:goNext()"><img src="/static/cortexit/icons/right.png" height="32px" width="32px"/></a>';
+            next.innerHTML = '<a href="javascript:goNext()"><img src="/static/icons/right.png" height="32px" width="32px"/></a>';
         }
 
         prevID = nextID = null;
@@ -175,7 +175,10 @@
                 nextID = id;
         }
         var status = document.getElementById("Status");
-        status.innerHTML = ((prevID!=null) ? "<--" : "") + " | " + ((nextID!=null) ? "-->" : "");
+        if ((prevID!=null) || (nextID!=null))
+            status.innerHTML = ((prevID!=null) ? "<--" : "") + " | " + ((nextID!=null) ? "-->" : "");
+        else
+            status.innerHTML = '';
         
         updateFonts();
         
@@ -343,9 +346,6 @@
             font.onmousewheel= onFontSpin;
         }
 
-        //content.style.fontSize = fontSize + "px";
-        //textzoom.style.fontSize = content.style.fontSize;
-
 
     }
 
@@ -354,7 +354,7 @@
     }
     
     var qI = 0;
-
+    
     function addImagesForSelection() {
         //TODO filter 'q' for useless prepositions like 'the', 'and', etc
         var selection = selectedText;
@@ -371,24 +371,32 @@
 //        images.innerHTML += '<div class="imageSectionTitle" style="clear: both;">Image results for: ' + selection + '</div><br/>';
 //        images.innerHTML += '<div class="imageSection"><iframe src=\"' + iurl + '\" width="100%" height="400px"></iframe></div>';
 
-        //cframes[currentFrame] += '<div id="x' + qI + '" class="ui-widget-content">';
-        nodes[currentNode] += '<br/><br/><div style="clear: both;">Image results for: ' + selection + '</div><br/>';
-        nodes[currentNode] += '<div class="imageSection"><iframe src=\"' + iurl + '\" width="100%" height="400px"></iframe></div>';
+        var m = '';
+        m += '<iframe src=\"' + iurl + '\" width="98%" height="98%"></iframe>';
         //cframes[currentFrame] += '<script>var newFrame = $(\'#x\' +' + qI + '); newFrame.resizable(); newFrame.draggable();';
         //cframes[currentFrame] += '</div>';
-
-
-        showNode(currentNode);
+        
+        newWindow('Image results for: ' + selection, m);
         
         qI++;
 
+    }
+
+    var eid = 0;
+    function newWindow(theTitle, x) {
+        var newID = ("Window" + eid);
+        $('#Window').html( "<div id='" + newID + "'>" + x + "</div>" );
+        $('#' + newID).dialog({ title: theTitle, width: '50%', height: 400 } );
+        $('#' + newID).fadeIn();
+        eid++;
+        
     }
 
     function setTheme(theme) {       
         currentTheme = theme;
 
         var c = document.getElementById("themeCSS");
-        c.href = '/static/cortexit/themes/' + theme + '.css';
+        c.href = '/static/themes/' + theme + '.css';
         localStorage['theme'] = theme;
     }
     
@@ -432,9 +440,6 @@
         pageurl = o;
     }
     
-    function visitOriginal() {
-        document.location = pageurl;
-    }
         
 //    function showHelp() {
 //        $( "#dialog-message" ).dialog({
@@ -511,6 +516,7 @@ $(document).ready(function(){
       //$('#_Top').fadeToggle();
       //$('#_Bottom').fadeToggle();
       $('#_Speech').fadeToggle();    
+
 });
 
 </script>
@@ -538,9 +544,9 @@ if (!document.all) document.captureEvents(Event.MOUSEUP);
     <div id="_Top" class="menu">
             
         <ul>
-            <!-- <li><a href="/go" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/link.png" alt="Go..."/><span>Go...</span></a></li> 
+            <!-- <li><a href="/go" class="tooltip"><img width="48px" height="48px" src="/static/icons/link.png" alt="Go..."/><span>Go...</span></a></li> 
             
-            <li><a href="/support" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/mode.png" alt="Mode"/><span>Mode</span></a>
+            <li><a href="/support" class="tooltip"><img width="48px" height="48px" src="/static/icons/mode.png" alt="Mode"/><span>Mode</span></a>
                 <ul>
                     <li><a href="javascript:setMode()">One Sentence</a></li>
                     <li><a href="javascript:setMode()">Two Sentences</a></li>
@@ -550,9 +556,9 @@ if (!document.all) document.captureEvents(Event.MOUSEUP);
                 </ul>
             </li>
             -->
-            <li><a href="javascript:toggleSpeech()" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/speak.png" alt="Speak"/><span>Toggle Speech</span></a></li>
-            <li><a href="javascript:addImagesForSelection();" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/picture.png" alt="Images"/><span>Images</span></a></li>
-            <li><a href="#" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/colors.png" title="Theme"/><span>Theme</span></a>
+            <li><a href="javascript:toggleSpeech()" class="tooltip"><img width="48px" height="48px" src="/static/icons/speak.png" alt="Speak"/><span>Toggle Speech</span></a></li>
+            <li><a href="javascript:addImagesForSelection();" class="tooltip"><img width="48px" height="48px" src="/static/icons/picture.png" alt="Images"/><span>Images</span></a></li>
+            <li><a href="#" class="tooltip"><img width="48px" height="48px" src="/static/icons/colors.png" title="Theme"/><span>Theme</span></a>
                 <ul>
                     <li><a href="javascript:setTheme('default-black')">White on Black</a></li>
                     <li><a href="javascript:setTheme('default-white')">Black on White</a></li>
@@ -562,10 +568,10 @@ if (!document.all) document.captureEvents(Event.MOUSEUP);
                     <li><a href="javascript:setTheme('chalkboard')">Chalkboard</a></li>
                 </ul>
             </li>
-            <li><a href="/support" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/earth.png" alt="Translate"/><span>Translate</span></a>
-            <li><a href="javascript:toggleEdit();" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/edit.png" alt="Edit"/><span>Edit</span></a>
-            <li><a href="javascript:shareIt();" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/share.png" alt="Share"/><span>Share</span></a>
-            <li><a href="#" class="tooltip"><img width="48px" height="48px" src="/static/cortexit/icons/question.png" alt="Help"/><span>Help</span></a>
+            <li><a href="/support" class="tooltip"><img width="48px" height="48px" src="/static/icons/earth.png" alt="Translate"/><span>Translate</span></a>
+            <li><a href="javascript:toggleEdit();" class="tooltip"><img width="48px" height="48px" src="/static/icons/edit.png" alt="Edit"/><span>Edit</span></a>
+            <li><a href="javascript:shareIt();" class="tooltip"><img width="48px" height="48px" src="/static/icons/share.png" alt="Share"/><span>Share</span></a>
+            <li><a href="#" class="tooltip"><img width="48px" height="48px" src="/static/icons/question.png" alt="Help"/><span>Help</span></a>
                 <ul>
                     <li><a href="/">What is Cortexit?</a></li>
                     <li><a href="/bookmarklet">Cortexit Bookmarklet</a></li>
@@ -579,25 +585,22 @@ if (!document.all) document.captureEvents(Event.MOUSEUP);
         
     </div>
     
-    
-    <div id="Return">
-        <a href="javascript:visitOriginal();">X</a>
-    </div>
-		
+ 		
     
     <div id="_Panel">
         <section id="_Content" contentEditable="false" onMouseOver="onContentMouseOver(this);" onMouseOut="onContentMouseOut(this);">
             <div id="Loading"><center>Loading...</center></div>
         </section>
-        <section id="Neighborhood" style="display:none">
-        </section>            
     </div>
+
+    <section id="Neighborhood" style="display:none">
+    </section>            
 
     <div id="_Bottom" style="">
         <table width="100%" id="_Control" border="0">
             <tr>
                 <td width="10%" align="left" id="ToggleNeighborhood">
-                    <a href="#" onClick="$('#Neighborhood').toggle();">Neighborhood</a>
+                    <a href="#" onClick="$('#Neighborhood').fadeToggle();">Neighborhood</a>
                 </td>
                 <td width="10%" align="left" id="_Prev">
 
@@ -612,13 +615,13 @@ if (!document.all) document.captureEvents(Event.MOUSEUP);
                     &nbsp;
                 </td>
                 <td width="10%" align="left">
-                    <a href="javascript:fontSmaller()"><img src="/static/cortexit/icons/minus.png" height="32px" width="32px" title="Smaller Font"/></a>
+                    <a href="javascript:fontSmaller()"><img src="/static/icons/minus.png" height="32px" width="32px" title="Smaller Font"/></a>
                 </td>
                 <td width="25%" align="center" id="_Font" >                    
                     &nbsp; Abc &nbsp;
                 </td>
                 <td width="10%" align="right">
-                    <a href="javascript:fontLarger()"><img src="/static/cortexit/icons/plus.png" height="32px" width="32px" title="Larger Font"/></a>
+                    <a href="javascript:fontLarger()"><img src="/static/icons/plus.png" height="32px" width="32px" title="Larger Font"/></a>
                 </td>
             </tr>
         </table>
@@ -633,7 +636,9 @@ if (!document.all) document.captureEvents(Event.MOUSEUP);
         <span id="attb"></span>        
         <a id="atlink"></a>
     </div>
-
+    <div id="Window">
+    </div>
+    
 </body>
 <script type="text/javascript">
 

@@ -19,12 +19,17 @@ import intelenviron.neo4j.KBLoader;
 import intelenviron.neo4j.KBNode;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.traversal.Traverser;
+import org.neo4j.rest.graphdb.traversal.RestTraversal;
 
 /**
  *
@@ -140,6 +145,22 @@ public class KBWeb {
     
     public KBWeb(final KB kb) {
         this.kb = kb;
+        get(new Route("/") {
+
+            @Override
+            public Object handle(Request rqst, Response rspns) {
+                htmlHeader(rspns);
+                try {
+                    getStaticBinaryFile("index.html", rspns.raw().getOutputStream());
+                    return null;
+                } catch (IOException ex) {
+                    Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
+                    return ex.toString();
+                }
+                        
+            }
+            
+        });
         
         get(new Route("/nodes/json") {
             @Override public Object handle(Request rqst, Response rspns) {
@@ -220,6 +241,71 @@ public class KBWeb {
                 return null;
             }
             
+        });
+        
+        get(new Route("/graph/:nodeid/js") {
+            private Traverser getNeighbors( final Node x )
+            {
+                return new RestTraversal().breadthFirst().maxDepth(2).traverse(x);
+            }
+            
+            @Override
+            public Object handle(Request rqst, Response rspns) {
+                String s = "";
+                Long id = Long.parseLong(rqst.params(":nodeid"));
+                
+                Map<Long, Node> neighbors = new HashMap();
+                try {
+                    Iterator<Node> ii = getNeighbors( kb.getNode(id) ).nodes().iterator();
+                    while (ii.hasNext()) {
+                        Node xn = ii.next();
+                        neighbors.put(xn.getId(), xn);
+                    }
+                    
+                }
+                catch (Exception e) {
+                    return null;
+                }
+                        
+
+                Set<Relationship> r = new HashSet();
+
+                //manipulates sigmaInst instance 's' to construct graph
+                s += "var initGraph = function(s) {";
+                for (Node f : neighbors.values()) {
+//                    s.addNode('n'+i,{
+//                    'x': Math.random(),
+//                    'y': Math.random(),
+//                    'size': 0.5+4.5*Math.random(),
+//                    'color': cluster['color'],
+//                    'cluster': cluster['id']
+//                    });
+
+                    double x = Math.random();
+                    double y = Math.random();
+                    
+                    String params = "'x': " + x + "," + "'y': " + y + "," + 
+                            "'size': 0.5+4.5*Math.random()";
+                    
+                    s += "s.addNode('n" + f.getId() + "', {" + params + "});";
+                    for (Relationship rr : f.getRelationships()) {
+                        r.add(rr);
+                    }
+                }
+                for (Relationship rr : r) {
+                    long start = rr.getStartNode().getId();
+                    long end = rr.getEndNode().getId();
+                    if (neighbors.containsKey(start) && neighbors.containsKey(end)) {
+                        String eID = start + "-" + end;
+                        s += "s.addEdge('" + eID + "','n" + start + "','n" + end + "');";
+                    }
+                }
+                
+                s += "}";
+                
+                jsHeader(rspns);
+                return s;
+            }            
         });
     }
     

@@ -1,0 +1,96 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+        <script type="text/javascript" src="/static/sigma/sigma.min.js"></script>
+        <script type="text/javascript" src="/static/sigma/sigma.forceatlas2.js"></script>
+        <script type="text/javascript">           
+            
+            var rootID = 5;
+            
+            $(document).ready(function(){
+                var sigRoot = document.getElementById('graph');
+                var s = sigma.init(sigRoot);
+                
+                s.drawingProperties({
+                    defaultLabelColor: '#ccc',
+                    font: 'Arial',
+                    edgeColor: 'source',
+                    defaultEdgeType: 'curve'
+                }).graphProperties({
+                    minNodeSize: 1,
+                    maxNodeSize: 10
+                });
+
+
+                
+                $.ajax({
+                    url: '/graph/' + rootID + '/js',
+                    dataType: "script",
+                    success: function(script, textStatus, jqXHR) {
+                        initGraph(s);
+                        s.draw();
+                        s.startForceAtlas2();              
+                        window.setTimeout(function() {
+                            s.stopForceAtlas2();
+                        }, 1000*4);
+                    }
+                    
+                });
+                
+
+
+//                // Generate a random graph with :
+//                //   . N nodes
+//                //   . E edges
+//                //   . C clusters
+//                //   . d the proportion of edges that connect two nodes
+//                //     from the same cluster
+//                var i, N = 100, E = 1500, C = 5, d = 0.5, clusters = [];
+//                for(i = 0; i < C; i++){
+//                    clusters.push({
+//                    'id': i,
+//                    'nodes': [],
+//                    'color': 'rgb('+Math.round(Math.random()*256)+','+
+//                                    Math.round(Math.random()*256)+','+
+//                                    Math.round(Math.random()*256)+')'
+//                    });
+//                }
+//
+//                for(i = 0; i < N; i++){
+//                    var cluster = clusters[(Math.random()*C)|0];
+//                    s.addNode('n'+i,{
+//                    'x': Math.random(),
+//                    'y': Math.random(),
+//                    'size': 0.5+4.5*Math.random(),
+//                    'color': cluster['color'],
+//                    'cluster': cluster['id']
+//                    });
+//                    cluster.nodes.push('n'+i);
+//                }
+//
+//                
+
+//                for(i = 0; i < E; i++){
+//                    if(Math.random() < 1-d){
+//                    s.addEdge(i,'n'+(Math.random()*N|0),'n'+(Math.random()*N|0));
+//                    }else{
+//                    var cluster = clusters[(Math.random()*C)|0], n = cluster.nodes.length;
+//                    s.addEdge(i,cluster.nodes[Math.random()*n|0],cluster.nodes[Math.random()*n|0]);
+//                    }
+//                }
+
+             });
+        </script>
+        
+    </head>
+    <body>
+        <div id="graph" style="width: 100%; height: 700px;"></div>
+    </body>
+</html>
