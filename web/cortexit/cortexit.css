@@ -149,6 +149,7 @@ a, a.visited {
     padding:0px;
     font-size:18px;
     font-weight:bold;
+    z-index: 20;
 }
 
 
@@ -162,79 +163,6 @@ a {
 
 
 
-.menu ul{
-    background: transparent;
-    height:35px;
-    list-style:none;
-    margin:0;
-    padding:0;
-}
-.menu li{
-    float:left;
-    padding:0px;
-}
-.menu li a{
-    color:#cccccc;
-    display:block;
-    font-weight:normal;
-    line-height:35px;
-    margin:0px;
-    padding:0px 25px;
-    text-align:center;
-    text-decoration:none;
-}
-.menu li a:hover, .menu ul li:hover a{
-    background: #2580a2 url("/static/cortexit/images/hover.gif") bottom center no-repeat;
-    color:#FFFFFF;
-    text-decoration:none;
-}
-.menu li ul{
-    background:#333333;
-    display:none;
-    height:auto;
-    padding:0px;
-    margin:0px;
-    border:0px;
-    position:absolute;
-    width:225px;
-    z-index:200;
-    /*top:1em;
-    /*left:0;*/
-}
-.menu li:hover ul{
-    display:block;
-
-}
-.menu li li {
-    background:url('/static/cortexit/images/sub_sep.gif') bottom left no-repeat;
-    display:block;
-    float:none;
-    margin:0px;
-    padding:0px;
-    width:225px;
-}
-.menu li:hover li a{
-    background:none;
-
-}
-.menu li ul a{
-    display:block;
-    height:35px;
-    font-size:18px;
-    font-style:normal;
-    margin:0px;
-    padding:0px 10px 0px 15px;
-    text-align:left;
-}
-.menu li ul a:hover, .menu li ul li:hover a{
-    background:#2580a2 url('/static/cortexit/images/hover_sub.gif') center left no-repeat;
-    border:0px;
-    color:#ffffff;
-    text-decoration:none;
-}
-.menu p{
-    clear:left;
-}	
 
 a:hover {text-decoration:none;} /*BG color is a must for IE6*/
 a.tooltip span {display:none; padding:2px 3px; margin-left:-70px; margin-top: 0px; width:140px; z-index: 400;}
