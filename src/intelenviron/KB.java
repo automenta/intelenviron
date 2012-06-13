@@ -5,6 +5,8 @@
 package intelenviron;
 
 import intelenviron.neo4j.KBLoader.Transactable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -24,6 +26,8 @@ public class KB {
     
     public final GraphDatabaseService graph;
     private Index<Node> nodeIndex;
+    
+    public final ExecutorService threads = Executors.newFixedThreadPool( 4 );
     
     public RelationshipType getType(final Class c) {
         return new RelationshipType() {
@@ -95,8 +99,29 @@ public class KB {
         return getNode(c, id, null);        
         //return getNode(c.getSimpleName() + "." + id);
     }
+    
+    public Node getNode(final Class c, final String id, final Transactable transactable) {
 
-    public Node getNode(Class c, String id, Transactable transactable) {
+        Node n = getNode(c.getSimpleName() + "." + id);
+        
+        if (n != null) {
+            if (transactable!=null) {
+                transactable.run(n);
+            }
+            return n;
+        }
+        else {        
+            n = newNode(c, id);
+
+            if (transactable!=null)
+                transactable.run(n);
+        }
+
+        
+        return n;
+    }
+
+    public Node getNodeTransaction(Class c, String id, Transactable transactable) {
 
         Node n = getNode(c.getSimpleName() + "." + id);
         if (n != null) {
@@ -131,6 +156,7 @@ public class KB {
     }
 
     public void shutdown() {
+        threads.shutdown();
         graph.shutdown();
     }
 

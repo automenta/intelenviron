@@ -12,7 +12,7 @@ import org.horrabin.horrorss.*;
  *
  * @author me
  */
-public class TestAddRSS {
+public class LoadSampleData {
 
     static {
         Session.init();
@@ -22,14 +22,14 @@ public class TestAddRSS {
 
 
     public static void main(String[] args) throws Exception {
-        new KBLoader(kb).loadRSS("http://rss.cnn.com/rss/cnn_topstories.rss");
-        new KBLoader(kb).loadRSS("http://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml");
-        
-//        KBLoader.loadRSS("https://news.google.com/news/feeds?pz=1&cf=all&ned=us&hl=en&q=Nuclear&output=rss");
-        //new KBLoader(kb).addTimeline(kb, "marianasoffer");
         
         new KBLoader(kb).addTimeline(kb, "automenta");
-        new KBLoader(kb).addTimeline(kb, "enformable");
+        new KBLoader(kb).addTimeline(kb, "cstross");
+        new KBLoader(kb).addTimeline(kb, "greatdismal");
+
+        new KBLoader(kb).loadRSS("http://rss.cnn.com/rss/cnn_topstories.rss");
+        new KBLoader(kb).loadRSS("http://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml");        
         
+        kb.shutdown();
     }
 }

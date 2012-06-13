@@ -22,6 +22,8 @@ import org.neo4j.graphdb.Relationship;
  */
 public class Calais {
 
+    final public static Logger logger = Logger.getLogger(Calais.class.getSimpleName());
+    
     private final CalaisRestClient client;
     private final CalaisConfig config;
 
@@ -42,10 +44,16 @@ public class Calais {
     }
 
     public CalaisResponse analyze(URL u) throws IOException {
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info(this.getClass().getSimpleName() + " submitting analysis for " + u.toString());
+        }
         return client.analyze(u, config);
     }
 
     public CalaisResponse analyze(String s) throws IOException {
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info(this.getClass().getSimpleName() + " submitting analysis for a String of length " + s.length());
+        }
         return client.analyze(s, config);
     }
 
