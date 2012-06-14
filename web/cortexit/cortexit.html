@@ -74,7 +74,7 @@
     function renderNeighborhood(node) {
         var line = '<table id="neighborTable"><tr>';
         if (node.ins.length > 0) {
-            line = line + '<td width="30%" style="vertical-align:bottom">';
+            line = line + '<td width="30%" style="vertical-align:top">';
             for (var ii in node.ins) {
                 var xi = node.ins[ii];
                 var id = xi.id;
@@ -98,7 +98,7 @@
         }
         
         if (numProperties > 0) {
-            line = line + '<td width="30%" style="vertical-align:bottom">';
+            line = line + '<td width="30%" style="vertical-align:top">';
             for (var id in node.prop) {   
                 if (id == 'content') continue;
                 if (id == 'name') continue;
@@ -111,7 +111,7 @@
             line = line + '</td>';
         }
         if (node.outs.length > 0) {
-            line = line + '<td width="30%" style="vertical-align:bottom">';
+            line = line + '<td width="30%" style="vertical-align:top">';
             for (var ii in node.outs) {
                 var xi = node.outs[ii];
                 var id = xi.id;
@@ -520,8 +520,6 @@ if (currentTheme == null) {
 setTheme(currentTheme);
 
 $(document).ready(function(){
-      //$('#_Top').fadeToggle();
-      //$('#_Bottom').fadeToggle();
       $('#_Speech').fadeToggle();    
       
       jQuery('ul.sf-menu').superfish();
@@ -595,26 +593,8 @@ if (!document.all) document.captureEvents(Event.MOUSEUP);
             </li>
         </ul>
         
-        
-    </div>
-    
- 		
-    
-    <div id="_Panel">
-        <section id="_Content" contentEditable="false" onMouseOver="onContentMouseOver(this);" onMouseOut="onContentMouseOut(this);">
-            <div id="Loading"><center>Loading...</center></div>
-        </section>
-    </div>
-
-    <section id="Neighborhood" style="display:none">
-    </section>            
-
-    <div id="_Bottom" style="">
-        <table width="100%" id="_Control" border="0">
+        <table id="_Control" border="0">
             <tr>
-                <td width="10%" align="left" id="ToggleNeighborhood">
-                    <a href="#" onClick="$('#Neighborhood').fadeToggle();">Neighborhood</a>
-                </td>
                 <td width="10%" align="left" id="_Prev">
 
                 </td>
@@ -639,7 +619,24 @@ if (!document.all) document.captureEvents(Event.MOUSEUP);
             </tr>
         </table>
 
+        
     </div>
+    
+ 		
+    
+    <div id="_Panel">
+        <section id="_Content" contentEditable="false" onMouseOver="onContentMouseOver(this);" onMouseOut="onContentMouseOut(this);">
+            <div id="Loading"><center>Loading...</center></div>
+            
+
+        </section>
+        
+        <section id="Neighborhood">
+        </section>            
+        
+    </div>
+
+
     
     <span id="_Speech">
     </span>

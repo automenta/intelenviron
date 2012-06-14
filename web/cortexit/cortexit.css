@@ -24,19 +24,16 @@ body {
 }
 
 #_Panel {
-    position: absolute;
     text-align:left;
     font-family:Arial,Sans;
     color: white;
     background-color: black;
-    width:98%;
+    width:100%;
     height: 88%;
-    left:1%;
-    top:6%;
     overflow: auto;
 }
 #_Content {
-    margin: 1%;
+    margin: 5px;
     opacity: 0;
     -webkit-transition: opacity 0.5s ease-in-out; //for chrome, safari
     -moz-transition: opacity 0.5s ease-in-out; //for mozilla firefox
@@ -45,10 +42,8 @@ body {
 #Neighborhood {
     left:2.5%;
     bottom: 5%;
-    position: fixed;
     width: 95%;
     z-index: 10;  
-    //pointer-events:none; //allows clicks to pass through the transparency of this overlay
 }
 #neighborTable {
     color: gray;
@@ -60,26 +55,26 @@ body {
 }
 
 .neighbor_summary_out {
-    background-color: #005;
+    background-color: #003;
 }
 .neighbor_summary_out:nth-child(odd) {
-    background-color: #007;
+    background-color: #004;
 }
 .neighbor_summary_in {
-    background-color: #500;
+    background-color: #300;
 }
 .neighbor_summary_in:nth-child(odd) {
-    background-color: #700;
+    background-color: #400;
 }
 .neighbor_summary_prop {
-    background-color: #050;
+    background-color: #030;
 }
 .neighbor_summary_prop:nth-child(odd) {
-    background-color: #070;
+    background-color: #040;
 }
 
 #Loading {
-   background: url('/static/cortexit/icons/loading.gif') no-repeat;
+   background: url('/static/icons/loading.gif') no-repeat;
    background-size: 100%;
    width: 100%;
    height: 90%;
@@ -87,7 +82,6 @@ body {
 
 
 #mainContent {
-    margin-bottom: 1em;
 }
 
 #propertyContent {
@@ -126,18 +120,8 @@ a, a.visited {
 
 
 #_Top {
-    position:absolute;
     top:0;
     left:1%;
-}
-
-#_Bottom {
-    overflow: auto;
-    color: white;
-    position: absolute;
-    bottom: 0;
-    right: 1%;
-    width: 48%;     
 }
 
 

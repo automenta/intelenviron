@@ -13,10 +13,14 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import org.neo4j.helpers.UTF8;
 import spark.*;
 import static spark.Spark.*;
+import spark.utils.IOUtils;
+import spark.utils.SparkUtils;
+import spark.webserver.SparkServerFactory;
 
 public class Web {
     long authenticationTimeout; //in milliseconds
@@ -28,7 +32,8 @@ public class Web {
     private final String adminPassword;
 
     public static Map<String, Object> staticpages = new HashMap();
-        final static byte[] buf = new byte[128000];
+    final static byte[] buf = new byte[64000];
+    
         //final static char[] chr = new char[4096];
 
 //    public static String getLocalTextFile(File file) throws IOException {
@@ -55,12 +60,12 @@ public class Web {
 //        return content;
 //    }
 
-    public static void getStaticBinaryFile(String path, OutputStream os) throws IOException {
-        getStaticBinaryFile(path, os, "");
+    public static void getStaticBinaryFile(String path, ServletOutputStream os) throws IOException {
+        getStaticBinaryFile(path, os, null);
     }
 
     //TODO should this be synchronized or a threadpool?
-    public static void getStaticBinaryFile(String path, OutputStream os, String append) throws IOException {
+    public static void getStaticBinaryFile(String path, ServletOutputStream os, String append) throws IOException {
         File f = new File("./web/" + path);
         if (!f.exists()) {
             return;
@@ -72,7 +77,9 @@ public class Web {
         while ((count = in.read(buf)) >= 0) {
             os.write(buf, 0, count);
         }
-        os.write(UTF8.encode(append));
+        
+        if (append!=null)
+            os.write(UTF8.encode(append));
         
         in.close();
         os.close();
@@ -169,6 +176,7 @@ public class Web {
         this.adminUser = adminUser;
         this.adminPassword = adminPassword;
         this.authenticationTimeout = authTimeout;
+        
         
         setPort(9090); // Spark will run on port 9090        
         
