@@ -10,8 +10,6 @@ import java.io.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,6 +55,21 @@ public class Web {
 
 
 
+    public static void getStatic(final String path, final String contentPath) {
+        get(new Route(path) {
+            @Override
+            public Object handle(Request rqst, Response rspns) {
+                htmlHeader(rspns);
+                try {
+                    getStaticBinaryFile(contentPath, rspns);
+                } catch (IOException ex) {
+                    Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                return null;
+            }            
+        });
+    }
+    
     public static void setCacheable(Response r) {
         final Calendar inTwoMonths = new GregorianCalendar();
         inTwoMonths.setTime(new Date());
@@ -170,7 +183,7 @@ public class Web {
         rspns.header("Content-type", "application/javascript");        
         setCacheable(rspns);       
     }
-    public static void imageHeader(final Response rspns, String type) {
+    public static void imageHeader(final Response rspns, final String type) {
         rspns.header("Content-type", "image/" + type);
         setCacheable(rspns);       
     }

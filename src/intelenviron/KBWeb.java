@@ -193,6 +193,9 @@ public class KBWeb {
                 return nodeData;
             }            
         });
+        
+        getStatic("/add", "add.html");
+        
         get(new Route("/node/:id") {
 
             @Override
