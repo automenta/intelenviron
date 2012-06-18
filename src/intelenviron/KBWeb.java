@@ -18,6 +18,7 @@ import static intelenviron.Web.*;
 import intelenviron.neo4j.KBLoader;
 import intelenviron.neo4j.KBNode;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -151,7 +152,7 @@ public class KBWeb {
             public Object handle(Request rqst, Response rspns) {
                 htmlHeader(rspns);
                 try {
-                    getStaticBinaryFile("index.html", rspns.raw().getOutputStream());
+                    getStaticBinaryFile("index.html", rspns);
                     return null;
                 } catch (IOException ex) {
                     Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
@@ -211,7 +212,7 @@ public class KBWeb {
                     commands.append("});");
                     commands.append("</script>");
                     
-                    getStaticBinaryFile("cortexit/cortexit.html", rspns.raw().getOutputStream(), commands.toString());
+                    getStaticBinaryFile("cortexit/cortexit.html", rspns, commands.toString());
                     
                     return null;
                 } catch (IOException ex) {
@@ -221,7 +222,8 @@ public class KBWeb {
             }            
         });
         
-        get(new Route("/read/rss/*") {
+        
+        get(new Route("/add/rss/*") {
 
             @Override
             public Object handle(Request rqst, Response rspns) {
@@ -230,18 +232,62 @@ public class KBWeb {
                 String url = rqst.pathInfo();
                 String rssURL = url.substring("/read/rss/".length() );
                 
+
                 try {
-                    //TODO add a callback for live response
-                    new KBLoader(kb).loadRSS(rssURL);
-                } catch (Exception ex) {
-                    Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
-                    return ex.toString();
+                    PrintStream ps = new PrintStream(rspns.raw().getOutputStream());
+                    try {
+                        ps.println("Loading: " + rssURL + "...");
+                        //TODO add a callback for live response
+                        Node n = new KBLoader(kb).loadRSS(rssURL);
+                        ps.println(" <a href='/node/" + n.getId() + "'>Finished</a>. " );
+                    } catch (Exception ex) {
+                        Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
+                        ps.println(" Error: " + ex.toString());
+                        return ex.toString();
+                    }
+                    ps.close();
+                }
+                catch (IOException e) {
+                    
                 }
                 
                 return null;
             }
             
         });
+        post(new Route("/add/text") {
+
+            @Override
+            public Object handle(Request rqst, Response rspns) {
+                htmlHeader(rspns);
+                
+                String content = rqst.queryParams("content");
+
+                return content;
+
+//                try {
+//                    PrintStream ps = new PrintStream(rspns.raw().getOutputStream());
+//                    try {
+//                        ps.println("Loading: " + rssURL + "...");
+//                        //TODO add a callback for live response
+//                        Node n = new KBLoader(kb).loadRSS(rssURL);
+//                        ps.println(" <a href='/node/" + n.getId() + "'>Finished</a>. " );
+//                    } catch (Exception ex) {
+//                        Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
+//                        ps.println(" Error: " + ex.toString());
+//                        return ex.toString();
+//                    }
+//                    ps.close();
+//                }
+//                catch (IOException e) {
+//                    
+//                }
+                
+                //return null;
+            }
+            
+        });
+        
         get(new Route("/graph/:nodeid") {
 
             @Override
@@ -251,7 +297,7 @@ public class KBWeb {
                     htmlHeader(rspns);
                     String commands = "<script type='text/javascript'>thisNode(" + id + ");</script>";
                     
-                    getStaticBinaryFile("graphvis.html", rspns.raw().getOutputStream(), commands);
+                    getStaticBinaryFile("graphvis.html", rspns, commands);
                     return null;
                 } catch (IOException ex) {
                     Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);

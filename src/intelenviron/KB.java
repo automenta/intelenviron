@@ -92,7 +92,7 @@ public class KB {
         if (graph.index()!=null) {
             nodeIndex = graph.index().forNodes( "node_auto_index" );            
         }
-        
+                
     }
 
     public Node getNode(Class c, String id) {

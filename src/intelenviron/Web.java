@@ -7,9 +7,9 @@ package intelenviron;
 import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
 import com.sun.org.apache.xml.internal.security.utils.Base64;
 import java.io.*;
+import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.GregorianCalendar;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,11 +18,9 @@ import javax.servlet.http.Cookie;
 import org.neo4j.helpers.UTF8;
 import spark.*;
 import static spark.Spark.*;
-import spark.utils.IOUtils;
-import spark.utils.SparkUtils;
-import spark.webserver.SparkServerFactory;
 
 public class Web {
+
     long authenticationTimeout; //in milliseconds
     
     private Date adminAuthenticated = null;
@@ -31,47 +29,50 @@ public class Web {
     private final String adminUser;
     private final String adminPassword;
 
-    public static Map<String, Object> staticpages = new HashMap();
-    final static byte[] buf = new byte[64000];
     
-        //final static char[] chr = new char[4096];
 
-//    public static String getLocalTextFile(File file) throws IOException {
-//        int len;
-//        final StringBuffer buffer = new StringBuffer();
-//        final FileReader reader = new FileReader(file);
-//        try {
-//            while ((len = reader.read(chr)) > 0) {
-//                buffer.append(chr, 0, len);
-//            }
-//        } finally {
-//            reader.close();
-//        }
-//        return buffer.toString();
-//    }
-
-
-//    public static String getStaticTextFile(String path) throws IOException {
-//        if (staticpages.containsKey(path)) {
-//            return (String) staticpages.get(path);
-//        }
-//        String content = getLocalTextFile(new File("./web/" + path));
-//        staticpages.put(path, content);
-//        return content;
-//    }
-
-    public static void getStaticBinaryFile(String path, ServletOutputStream os) throws IOException {
-        getStaticBinaryFile(path, os, null);
+    public static void getStaticBinaryFile(String path, Response rspns) throws IOException {
+        getStaticBinaryFile(path, rspns, null);
     }
 
+
+
+    public static void setCacheable(Response r) {
+        final Calendar inTwoMonths = new GregorianCalendar();
+        inTwoMonths.setTime(new Date());
+        inTwoMonths.add(Calendar.MONTH, 2);
+        r.raw().setDateHeader("Expires", inTwoMonths.getTimeInMillis());        
+    }
+    
     //TODO should this be synchronized or a threadpool?
-    public static void getStaticBinaryFile(String path, ServletOutputStream os, String append) throws IOException {
-        File f = new File("./web/" + path);
+    public static void getStaticBinaryFile(final String path, final Response rspns, final String append) throws IOException {
+        
+        ServletOutputStream os = rspns.raw().getOutputStream();
+        final File f = new File("./web/" + path);
         if (!f.exists()) {
             return;
         }
         
-        FileInputStream in = new FileInputStream(f);
+        
+
+//   @Override
+//    public void setContentType(String contentType) {
+//        if (contentType != null && Arrays.binarySearch(CACHEABLE_CONTENT_TYPES, contentType) > -1) {
+//            Calendar inTwoMonths = GeneralUtils.createCalendar();
+//            inTwoMonths.add(Calendar.MONTH, 2);
+//
+//            super.setDateHeader("Expires", inTwoMonths.getTimeInMillis());
+//        } else {
+//            super.setHeader("Expires", "-1");
+//            super.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+//        }
+//        super.setContentType(contentType);
+//    }
+        
+        final int bufSize = 16384;
+        final byte[] buf = new byte[bufSize];
+        
+        final FileInputStream in = new FileInputStream(f);
 
         int count = 0;
         while ((count = in.read(buf)) >= 0) {
@@ -153,16 +154,25 @@ public class Web {
         
     }
     
-    public static void htmlHeader(final Response rspns) {
-        rspns.header("Content-type", "text/html");        
-    }
     public static void jsonHeader(final Response rspns) {
         rspns.header("Content-type", "application/json");        
     }
+    public static void htmlHeader(final Response rspns) {
+        rspns.header("Content-type", "text/html");        
+        setCacheable(rspns);       
+    }
     public static void jsHeader(final Response rspns) {
         rspns.header("Content-type", "application/javascript");        
+        setCacheable(rspns);       
     }
-    
+    public static void imageHeader(final Response rspns, String type) {
+        rspns.header("Content-type", "image/" + type);
+        setCacheable(rspns);       
+    }
+    public static void cssHeader(final Response rspns) {
+        rspns.header("Content-type", "text/css");
+        setCacheable(rspns);
+    }
     
     //http://blog.stevensanderson.com/2008/08/25/using-the-browsers-native-login-prompt/
     /**
@@ -227,28 +237,28 @@ public class Web {
 
                 try {
                     if (page.endsWith(".jpg") || page.endsWith(".jpeg")) {
-                        rspns.header("Content-type", "image/jpg");
-                        getStaticBinaryFile(page, rspns.raw().getOutputStream());
+                        imageHeader(rspns, "jpg");
+                        getStaticBinaryFile(page, rspns);
                         return null;
                     } else if (page.endsWith(".png")) {
-                        rspns.header("Content-type", "image/png");
-                        getStaticBinaryFile(page, rspns.raw().getOutputStream());
+                        imageHeader(rspns, "png");
+                        getStaticBinaryFile(page, rspns);
                         return null;
                     } else if (page.endsWith(".gif")) {
-                        rspns.header("Content-type", "image/gif");
-                        getStaticBinaryFile(page, rspns.raw().getOutputStream());
+                        imageHeader(rspns, "gif");
+                        getStaticBinaryFile(page, rspns);
                         return null;
                     } else if (page.endsWith(".css")) {
-                        rspns.header("Content-type", "text/css");
-                        getStaticBinaryFile(page, rspns.raw().getOutputStream());
+                        cssHeader(rspns);
+                        getStaticBinaryFile(page, rspns);
                         return null;
                     } else if (page.endsWith(".js")) {
-                        rspns.header("Content-type", "text/javascript");
-                        getStaticBinaryFile(page, rspns.raw().getOutputStream());
+                        jsHeader(rspns);
+                        getStaticBinaryFile(page, rspns);
                         return null;
                     } else {
-                        rspns.header("Content-type", "text/html");
-                        getStaticBinaryFile(page, rspns.raw().getOutputStream());
+                        htmlHeader(rspns);
+                        getStaticBinaryFile(page, rspns);
                         return null;
                     }
                 } catch (IOException ex) {

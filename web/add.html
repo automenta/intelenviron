@@ -1,0 +1,96 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Add</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+
+        <style>
+            body {
+                font-size: 24px;
+                margin: 1.25em;
+            }
+            textarea {
+                font-size: 24px;                
+            }
+            #textentry {
+                width: 100%;
+            }
+        </style>
+        <script>
+            function load() {
+                var t = document.getElementById('wysihtml5-textarea').value;
+
+                var mode = document.getElementById('loadmode').value;
+                
+                if (mode == 'text') {
+                    target = '/add/text';
+                }
+                else {
+                    target = null;
+                }
+
+                if(target!=null) {
+                    $.post(target, { content: t }, function(data) {
+                        alert(data);
+                    });
+                }
+                
+            }
+        </script>
+    </head>
+    <body>
+        <form id="textentry">
+            <div id="wysihtml5-toolbar" style="display: none;">
+                <a data-wysihtml5-command="bold">bold</a>
+                <a data-wysihtml5-command="italic">italic</a>
+
+                <!-- Some wysihtml5 commands require extra parameters -->
+                <a data-wysihtml5-command="foreColor" data-wysihtml5-command-value="red">red</a>
+                <a data-wysihtml5-command="foreColor" data-wysihtml5-command-value="green">green</a>
+                <a data-wysihtml5-command="foreColor" data-wysihtml5-command-value="blue">blue</a>
+
+                <!-- Some wysihtml5 commands like 'createLink' require extra paramaters specified by the user (eg. href) -->
+                <a data-wysihtml5-command="createLink">insert link</a>
+                <div data-wysihtml5-dialog="createLink" style="display: none;">
+                    <label>
+                        Link:
+                        <input data-wysihtml5-dialog-field="href" value="http://" class="text">
+                    </label>
+                    <a data-wysihtml5-dialog-action="save">OK</a> <a data-wysihtml5-dialog-action="cancel">Cancel</a>
+                </div>
+                
+                <a data-wysihtml5-command="insertSpeech">speech</a>
+
+            </div>
+            <textarea id="wysihtml5-textarea" style="width: 100%; height: 300px;" placeholder="Enter your text ..." autofocus></textarea>
+        </form>
+        
+
+        <script src="/static/xing/parser_rules/advanced.js"></script>
+        <script src="/static/xing/dist/wysihtml5-0.3.0.min.js"></script>
+        <script>
+            var editor = new wysihtml5.Editor("wysihtml5-textarea", { // id of textarea element
+                toolbar:      "wysihtml5-toolbar", // id of toolbar element
+                stylesheets:  "css/stylesheet.css",
+                parserRules:  wysihtml5ParserRules // defined in parser rules set
+            });
+        </script>
+        
+        <select id="loadmode">
+            <option value="text">Text (as-is)</option>
+            <option value="text_sentence">Text, by Sentence</option>
+            <option value="text_paragraph">Text, by Paragraph</option>
+            <option value="rss">RSS</option>
+            <option value="youtube">Youtube Channel</option>        
+        </select>
+        
+        <button type="button" onclick="load();">Load</button>
+        
+    </body>
+</html>

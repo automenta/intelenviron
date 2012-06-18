@@ -238,19 +238,23 @@ public class KBLoader {
                     //System.out.println("Title: " + item.getTitle());
                     //System.out.println("Link : " + item.getLink());
                     //System.out.println("Desc.: " + item.getDescription());
-                    final String cleanText = Jsoup.clean(item.getDescription(), Whitelist.simpleText());
+                    final String cleanText = item.getDescription()!=null ? Jsoup.clean(item.getDescription(), Whitelist.simpleText()) : "";
+                    
 
-                    CalaisResponse cr;
-                    try {
-                        cr = calais.analyze(cleanText);
-                    } catch (Exception e) {
-                        Calais.logger.severe(e.toString());
-                        cr = null;
+                    CalaisResponse cr = null;
+                    
+                    if (!cleanText.isEmpty() ) {
+                        try {
+                            cr = calais.analyze(cleanText);
+                        } catch (Exception e) {
+                            Calais.logger.severe(e.toString());
+                        }
                     }
 
 
                     final CalaisResponse crr = cr;
 
+                    System.out.println("adding: " + item);
                     Node x = kb.getNode(Document.class, item.getLink(), new KBLoader.Transactable() {
 
                         @Override
