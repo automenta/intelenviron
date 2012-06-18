@@ -10,6 +10,8 @@ import java.io.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,7 +31,25 @@ public class Web {
     private final String adminUser;
     private final String adminPassword;
 
-    
+    final static int staticBufferSize = 1024 * 64;
+    final static ObjectPool<byte[]> buffers = new ObjectPool() {
+
+        @Override
+        protected Object create() {
+            return new byte[staticBufferSize];
+        }
+
+        @Override
+        public boolean validate(Object o) {
+            return true;
+        }
+
+        @Override
+        public void expire(Object o) {
+        }
+
+        
+    };
 
     public static void getStaticBinaryFile(String path, Response rspns) throws IOException {
         getStaticBinaryFile(path, rspns, null);
@@ -44,7 +64,6 @@ public class Web {
         r.raw().setDateHeader("Expires", inTwoMonths.getTimeInMillis());        
     }
     
-    //TODO should this be synchronized or a threadpool?
     public static void getStaticBinaryFile(final String path, final Response rspns, final String append) throws IOException {
         
         ServletOutputStream os = rspns.raw().getOutputStream();
@@ -54,23 +73,7 @@ public class Web {
         }
         
         
-
-//   @Override
-//    public void setContentType(String contentType) {
-//        if (contentType != null && Arrays.binarySearch(CACHEABLE_CONTENT_TYPES, contentType) > -1) {
-//            Calendar inTwoMonths = GeneralUtils.createCalendar();
-//            inTwoMonths.add(Calendar.MONTH, 2);
-//
-//            super.setDateHeader("Expires", inTwoMonths.getTimeInMillis());
-//        } else {
-//            super.setHeader("Expires", "-1");
-//            super.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-//        }
-//        super.setContentType(contentType);
-//    }
-        
-        final int bufSize = 16384;
-        final byte[] buf = new byte[bufSize];
+        byte[] buf = buffers.checkOut();
         
         final FileInputStream in = new FileInputStream(f);
 
@@ -84,6 +87,8 @@ public class Web {
         
         in.close();
         os.close();
+        
+        buffers.checkIn(buf);
     }
     
     public boolean isAdmin(String user, String pass) {

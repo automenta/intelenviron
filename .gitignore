@@ -1,3 +1,5 @@
 conf/default.py
 conf/humandala.py
+data/*
+data
 
