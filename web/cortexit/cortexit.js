@@ -16,7 +16,7 @@
     var prevID = null;
     var nextID = null;
 
-    function enableSpeech(line) {
+    function enableVozmeSpeech(line) {
         speechEnabled = true;
 
         var speech = document.getElementById("_Speech");
@@ -35,7 +35,7 @@
         speech.innerHTML = '<iframe src="' + speechURL + '" width="350px" height="120px"></iframe>';
     }
     
-    function disableSpeech() {
+    function disableVozmeSpeech() {
         speechEnabled = false;
         var speech = document.getElementById("_Speech");
         $('#_Speech').fadeOut('slow', function() {
@@ -43,13 +43,24 @@
         });
     }
 
-    function toggleSpeech() {
+    function toggleVozmeSpeech() {
         if (speechEnabled == true) {
-            disableSpeech();
+            disableVozmeSpeech();
         }
         else {
-            enableSpeech($('#_Content').text());
+            enableVozmeSpeech($('#_Content').text());
         }
+    }
+    
+    function toggleSpeakSpeech() {
+        $.getScript("/static/speak/speakClient.js", function(data, textStatus, jqxhr) {
+            var content = $('#_Content').text();
+            speak.play(content);
+//            console.log(data); //data returned
+//            console.log(textStatus); //success
+//            console.log(jqxhr.status); //200
+//            console.log('Load was performed.');
+        });
     }
 
     function renderMainContent(node) {
@@ -121,7 +132,7 @@
     
     function showNode(f) {
         
-        disableSpeech();
+        disableVozmeSpeech();
 
         currentNode = nodes[f];
         
@@ -195,7 +206,7 @@
 //        );
 //        ex8.toggle();
 
-        $("#_Content").css({ opacity: 1.0 });
+        $("#_Content").css({opacity: 1.0});
 
     }
 
@@ -213,7 +224,7 @@
     }
     
     function setNode(id) {
-        $("#_Content").css({ opacity: 0 });
+        $("#_Content").css({opacity: 0});
         $.getJSON('/node/' + id + '/json', function(data) {
             nodes = []
             _n(data);
@@ -379,7 +390,7 @@
     function newWindow(theTitle, x) {
         var newID = ("Window" + eid);
         $('#Window').html( "<div id='" + newID + "'>" + x + "</div>" );
-        $('#' + newID).dialog({ title: theTitle, width: '50%', height: 400 } );
+        $('#' + newID).dialog({title: theTitle, width: '50%', height: 400} );
         $('#' + newID).fadeIn();
         eid++;        
     }

@@ -12,10 +12,9 @@ and open the template in the editor.
 
         <style>
             body {
-                font-size: 24px;
                 margin: 1.25em;
             }
-            textarea {
+            body, textarea, button, select {
                 font-size: 24px;                
             }
             #textentry {
@@ -36,15 +35,25 @@ and open the template in the editor.
                 }
 
                 if(target!=null) {
-                    $.post(target, { content: t }, function(data) {
-                        alert(data);
-                    });
+                    $("#output")  
+                        .html("loading")  
+                        .load(target, {content: t});  
                 }
                 
             }
         </script>
     </head>
     <body>
+        <div style="float: left; margin-bottom: 0.5em">
+            <select id="loadmode">
+                <option value="text">Text (as-is)</option>
+                <option value="text_sentence">Text, by Sentence</option>
+                <option value="text_paragraph">Text, by Paragraph</option>
+                <option value="rss">RSS</option>
+                <option value="youtube">Youtube Channel</option>        
+            </select>
+        </div>
+        
         <form id="textentry">
             <div id="wysihtml5-toolbar" style="display: none;">
                 <a data-wysihtml5-command="bold">bold</a>
@@ -68,7 +77,7 @@ and open the template in the editor.
                 <a data-wysihtml5-command="insertSpeech">speech</a>
 
             </div>
-            <textarea id="wysihtml5-textarea" style="width: 100%; height: 300px;" placeholder="Enter your text ..." autofocus></textarea>
+            <textarea id="wysihtml5-textarea" style="width: 100%; height: 300px;" placeholder="..." autofocus></textarea>
         </form>
         
 
@@ -82,15 +91,12 @@ and open the template in the editor.
             });
         </script>
         
-        <select id="loadmode">
-            <option value="text">Text (as-is)</option>
-            <option value="text_sentence">Text, by Sentence</option>
-            <option value="text_paragraph">Text, by Paragraph</option>
-            <option value="rss">RSS</option>
-            <option value="youtube">Youtube Channel</option>        
-        </select>
+
+        <div style="float: right">
+            <button type="button" onclick="load();">Load</button>
+        </div>
         
-        <button type="button" onclick="load();">Load</button>
-        
+        <div style="clear: both; width: 100%" id="output" >
+        </div>
     </body>
 </html>

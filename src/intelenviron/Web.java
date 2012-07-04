@@ -7,14 +7,13 @@ package intelenviron;
 import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
 import com.sun.org.apache.xml.internal.security.utils.Base64;
 import java.io.*;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
+import org.apache.commons.io.IOUtils;
 import org.neo4j.helpers.UTF8;
 import spark.*;
 import static spark.Spark.*;
@@ -29,25 +28,25 @@ public class Web {
     private final String adminUser;
     private final String adminPassword;
 
-    final static int staticBufferSize = 1024 * 64;
-    final static ObjectPool<byte[]> buffers = new ObjectPool() {
-
-        @Override
-        protected Object create() {
-            return new byte[staticBufferSize];
-        }
-
-        @Override
-        public boolean validate(Object o) {
-            return true;
-        }
-
-        @Override
-        public void expire(Object o) {
-        }
-
-        
-    };
+//    final static int staticBufferSize = 1024 * 64;
+//    final static ObjectPool<byte[]> buffers = new ObjectPool() {
+//
+//        @Override
+//        protected Object create() {
+//            return new byte[staticBufferSize];
+//        }
+//
+//        @Override
+//        public boolean validate(Object o) {
+//            return true;
+//        }
+//
+//        @Override
+//        public void expire(Object o) {
+//        }
+//
+//        
+//    };
 
     public static void getStaticBinaryFile(String path, Response rspns) throws IOException {
         getStaticBinaryFile(path, rspns, null);
@@ -70,38 +69,37 @@ public class Web {
         });
     }
     
-    public static void setCacheable(Response r) {
-        final Calendar inTwoMonths = new GregorianCalendar();
-        inTwoMonths.setTime(new Date());
-        inTwoMonths.add(Calendar.MONTH, 2);
-        r.raw().setDateHeader("Expires", inTwoMonths.getTimeInMillis());        
+    public static void setCacheable(final Response r) {
+//        final Calendar inTwoMonths = new GregorianCalendar();
+//        inTwoMonths.setTime(new Date());
+//        inTwoMonths.add(Calendar.MONTH, 2);
+//        r.raw().setDateHeader("Expires", inTwoMonths.getTimeInMillis());        
+        
+        //60 days ~= 2 months
+        r.raw().setDateHeader("Expires", new Date().getTime() + (1000 * 60 * 60 * 24 * 30 * 2));
     }
     
-    public static void getStaticBinaryFile(final String path, final Response rspns, final String append) throws IOException {
-        
-        ServletOutputStream os = rspns.raw().getOutputStream();
+    public static void getStaticBinaryFile(final String path, final Response rspns, final String append) throws IOException {        
+        final ServletOutputStream os = rspns.raw().getOutputStream();
         final File f = new File("./web/" + path);
         if (!f.exists()) {
             return;
         }
         
-        
-        byte[] buf = buffers.checkOut();
-        
-        final FileInputStream in = new FileInputStream(f);
-
-        int count = 0;
-        while ((count = in.read(buf)) >= 0) {
-            os.write(buf, 0, count);
+        if (append==null) {
+            final long len = f.length();
+            rspns.header("Content-Length", Long.toString(len));
         }
         
+        final FileInputStream in = new FileInputStream(f);
+        
+        IOUtils.copy(in, os);
+
         if (append!=null)
             os.write(UTF8.encode(append));
         
         in.close();
         os.close();
-        
-        buffers.checkIn(buf);
     }
     
     public boolean isAdmin(String user, String pass) {
@@ -180,7 +178,11 @@ public class Web {
         setCacheable(rspns);       
     }
     public static void jsHeader(final Response rspns) {
-        rspns.header("Content-type", "application/javascript");        
+        rspns.header("Content-type", "application/x-javascript");        
+        setCacheable(rspns);       
+    }
+    public static void xmlHeader(final Response rspns) {
+        rspns.header("Content-type", "text/xml");
         setCacheable(rspns);       
     }
     public static void imageHeader(final Response rspns, final String type) {
@@ -272,6 +274,10 @@ public class Web {
                         return null;
                     } else if (page.endsWith(".js")) {
                         jsHeader(rspns);
+                        getStaticBinaryFile(page, rspns);
+                        return null;
+                    } else if (page.endsWith(".xml")) {
+                        xmlHeader(rspns);
                         getStaticBinaryFile(page, rspns);
                         return null;
                     } else {
