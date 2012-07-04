@@ -68,6 +68,15 @@
         stopAutospeech = true;
         $('#audio').html('');
     }
+    
+    function goNextExplicit() {
+        stopSpeakAutoSpeech();
+        goNext();
+    }
+    function goPreviousExplicit() {
+        stopSpeakAutoSpeech();
+        goPrevious();
+    }
 
     function renderMainContent(node) {
         var content = node.prop['content'];
@@ -154,7 +163,7 @@
             prev.innerHTML = '&nbsp;';
         }
         else {
-            prev.innerHTML = '<a href="javascript:goPrevious()"><img src="/static/icons/left.png" height="32px" width="32px"/></a>';
+            prev.innerHTML = '<a href="javascript:goPreviousExplicit()"><img src="/static/icons/left.png" height="32px" width="32px"/></a>';
         }
 
         var next = document.getElementById("_Next");
@@ -162,8 +171,7 @@
             next.innerHTML = '&nbsp;';
         }
         else {
-            //next.innerHTML = '<button onClick="goNext();">----&gt;</button>';
-            next.innerHTML = '<a href="javascript:goNext()"><img src="/static/icons/right.png" height="32px" width="32px"/></a>';
+            next.innerHTML = '<a href="javascript:goNextExplicit()"><img src="/static/icons/right.png" height="32px" width="32px"/></a>';
         }
 
         prevID = nextID = null;
@@ -300,11 +308,11 @@
 
         if (nDelta < 0) {
             //HandleMouseSpin( 1, e.clientX, e.clientY );
-            goPrevious();
+            goPreviousExplicit();
         }
         if (nDelta > 0) {
             //HandleMouseSpin( -1, e.clientX, e.clientY );
-            goNext();
+            goNextExplicit();
         }
 
         if ( e.preventDefault ) {  // Mozilla FireFox
@@ -433,7 +441,7 @@
         if (!editing) {
             if (keycode == 37) {
                 //left
-                goPrevious();
+                goPreviousExplicit();
             }
             else if (keycode == 38) {
                 //up
@@ -441,7 +449,7 @@
             }
             else if (keycode == 39) {
                 //right
-                goNext();
+                goNextExplicit();
             }
             else if (keycode == 40) {
                 //down
