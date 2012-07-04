@@ -52,15 +52,15 @@
         }
     }
     
-    function toggleSpeakSpeech() {
+    function toggleSpeakSpeech(f) {
         $.getScript("/static/speak/speakClient.js", function(data, textStatus, jqxhr) {
-            var content = $('#_Content').text();
-            speak.play(content);
-//            console.log(data); //data returned
-//            console.log(textStatus); //success
-//            console.log(jqxhr.status); //200
-//            console.log('Load was performed.');
+            var content = $('#_Content').text();            
+            speak.play(content, {}, f );
         });
+    }
+
+    function toggleSpeakAutoSpeech() {
+        toggleSpeakSpeech( function() {goNext( function() { toggleSpeakAutoSpeech(); });  } );            
     }
 
     function renderMainContent(node) {
@@ -213,23 +213,30 @@
     function goPrevious() {
         //TODO update through AJAX to avoid reloading entire page
         if (prevID!=null)
-           setNode(prevID);
+           setNode(prevID, null);
 
-    }
-
-    function goNext() {
-        //TODO update through AJAX to avoid reloading entire page
-        if (nextID!=null)
-           setNode(nextID);
     }
     
-    function setNode(id) {
+    function goNext() {
+        goNext(null);
+    }
+
+    function goNext(f) {
+        //TODO update through AJAX to avoid reloading entire page
+        if (nextID!=null)
+           setNode(nextID, f);
+    }
+    
+    function setNode(id, f) {
         $("#_Content").css({opacity: 0});
         $.getJSON('/node/' + id + '/json', function(data) {
             nodes = []
             _n(data);
             window.history.pushState(id, '', '/node/' + id);
             showNode(0);
+            
+            if (f!=null)
+                f();
         });    
         
     }
