@@ -59,8 +59,14 @@
         });
     }
 
-    function toggleSpeakAutoSpeech() {
-        toggleSpeakSpeech( function() {goNext( function() { toggleSpeakAutoSpeech(); });  } );            
+    var stopAutospeech = false;
+    function startSpeakAutoSpeech() {
+        stopAutospeech = false;
+        toggleSpeakSpeech( function() { if (!stopAutospeech) goNext( function() { if (!stopAutospeech) startSpeakAutoSpeech(); });  } );
+    }
+    function stopSpeakAutoSpeech() {
+        stopAutospeech = true;
+        $('#audio').html('');
     }
 
     function renderMainContent(node) {

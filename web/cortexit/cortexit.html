@@ -18,9 +18,14 @@
         <ul class="sf-menu">
             <li><a href="/add" class="tooltip"><img width="48px" height="48px" src="/static/icons/simplistica/add.png" alt="Add"/><span>Add</span></a></li>
             
-            <li><a href="javascript:toggleVozmeSpeech()" class="tooltip"><img width="48px" height="48px" src="/static/icons/simplistica/sound.png" alt="Speak"/><span>Toggle VozMe Speech</span></a></li>
-            <li><a href="javascript:toggleSpeakSpeech(function() {})" class="tooltip"><img width="48px" height="48px" src="/static/icons/simplistica/sound.png" alt="Speak"/><span>Toggle Speak.js Speech</span></a></li>
-            <li><a href="javascript:toggleSpeakAutoSpeech()" class="tooltip"><img width="48px" height="48px" src="/static/icons/simplistica/sound.png" alt="Speak"/><span>Toggle Speak.js Speech</span></a></li>
+            <li><a href="#" class="tooltip"><img width="48px" height="48px" src="/static/icons/simplistica/sound.png" alt="Speak"/><span>Speech</span></a>
+                <ul>
+                    <li><a href="javascript:toggleSpeakSpeech(function() {})">Speak.js Speech</a></li>
+                    <li><a href="javascript:startSpeakAutoSpeech()">Start Speak.js Autoplay</a></li>
+                    <li><a href="javascript:stopSpeakAutoSpeech()">Stop Speak.js Autoplay</a></li>
+                    <li><a href="javascript:toggleVozmeSpeech()">Toggle VozMe Speech</a></li>
+                </ul>
+            </li>                
 
             <li><a href="javascript:imageIt();" class="tooltip"><img width="48px" height="48px" src="/static/icons/webapp/Picture.png" alt="Images"/><span>Images</span></a></li>
             <li><a href="#" class="tooltip"><img width="48px" height="48px" src="/static/icons/simplistica/monitor.png" alt="Theme"/><span>Theme</span></a>
