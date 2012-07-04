@@ -7,8 +7,11 @@ package intelenviron.neo4j;
 import intelenviron.Calais;
 import intelenviron.KB;
 import intelenviron.Session;
+import java.net.URL;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import mx.bigdata.jcalais.CalaisResponse;
 import org.horrabin.horrorss.RssChannelBean;
 import org.horrabin.horrorss.RssFeed;
@@ -16,7 +19,9 @@ import org.horrabin.horrorss.RssImageBean;
 import org.horrabin.horrorss.RssItemBean;
 import org.horrabin.horrorss.RssParser;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
+import org.jsoup.select.Elements;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
 import twitter4j.*;
@@ -43,6 +48,104 @@ public class KBLoader {
         CREATES = kb.getType("creates");
         MENTIONS = kb.getType("mentions");
         NEXT = kb.getType("next");
+    }
+
+    public Node loadText(final String content) {
+        return kb.getNode(Document.class, UUID.randomUUID().toString(), new Transactable() {
+
+            @Override
+            public void run(Node n) {
+                n.setProperty("when", new Date().getTime());
+                n.setProperty("content", content);
+            }
+            
+        });
+    }
+    public Node loadTextSentences(final String content) {
+        final Node page = kb.getNode(Document.class, UUID.randomUUID().toString(), new Transactable() {
+
+            @Override
+            public void run(Node n) {
+                n.setProperty("when", new Date().getTime());
+            }
+            
+        });
+        
+        URL target = null;
+        org.jsoup.nodes.Document doc = Jsoup.parse(content);
+        
+        if (target != null) {
+//            Elements links = doc.select("a[href]");
+//            for (Element e : links) {
+//                e.prepend("{{a href=\"" + escape(cortexifyURL(target.getHost(), escape(e.attr("href")))) + "\" target=\"_blank\"}}");
+//                e.append("{{/a}}");
+//            }
+        } else {
+            Elements links = doc.select("a[href]");
+            for (Element e : links) {
+                e.prepend("{{a href=\"" + links.attr("href") + "\" target=\"_blank\"}}");
+                e.append("{{/a}}");
+            }
+        }
+
+        Elements imgs = doc.select("img[src]");
+        for (Element e : imgs) {
+            e.prepend("{{img src=\"" + e.attr("src") + "\"/}}");
+        }
+        final String liBreak = "{{br}}";
+        for (Element e : doc.select("li")) {
+            e.append(liBreak);
+        }
+        for (Element e : doc.select("tr")) {
+            e.append(liBreak);
+        }
+        for (Element e : doc.select("hr")) {
+            e.append(liBreak);
+        }
+        for (Element e : doc.select("br")) {
+            e.append(liBreak);
+        }
+
+
+        String t = doc.text();
+        t = t.replace(". ", ".\n");
+        t = t.replace("? ", "?\n");
+        t = t.replace("! ", "!\n");
+        t = t.replace(liBreak, "\n");
+        t = t.replace("{{", "<");
+        t = t.replace("}}", ">");
+        String[] sentences = t.split("\n");
+        
+        Node prevNode = page;
+        for (String s : sentences) {
+            s = s.trim();
+            if (s.length() < 1) {
+                continue;
+            }
+//            if (s.length() > maxSentenceLength) {
+//                //...
+//            }
+            
+//            //TODO proper string escaping.. this is a HACK!
+//            frames.add("_f(\"" + frameEscape(s) + "\");");
+            final String ss = s;
+            final Node previous = prevNode;
+            Node x = kb.getNode(Document.class, UUID.randomUUID().toString(), new Transactable() {
+                @Override
+                public void run(Node n) {
+                    n.setProperty("content", ss);
+                    kb.relateOnce(page, n, CREATES);
+
+                    kb.relateOnce(previous, n, NEXT);
+
+                }
+                
+            });
+            prevNode = x;
+            
+        }
+        return page;
+        
     }
 
     public interface Transactable {

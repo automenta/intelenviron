@@ -19,6 +19,7 @@ import intelenviron.neo4j.KBLoader;
 import intelenviron.neo4j.KBNode;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -27,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.traversal.Traverser;
@@ -144,6 +147,48 @@ public class KBWeb {
 
     }
     
+    public abstract static class LoadRoute extends Route {
+
+        public LoadRoute(String r) {
+            super(r);
+        }
+        
+            @Override
+            public Object handle(Request rqst, Response rspns) {
+                htmlHeader(rspns);
+                
+                String content = rqst.queryParams("content");
+
+                try {
+                    String possibleURL = Jsoup.clean(content, Whitelist.simpleText());
+                    if (possibleURL.startsWith("http://")) {
+                        Whitelist w = Whitelist.simpleText().addTags("a", "img", "br").addAttributes("a", "href").addAttributes("img", "src");
+                        
+                        content = Jsoup.clean(Jsoup.parse(new URL(possibleURL), 5000).html(), w).replaceAll("\n", "<br/>");
+                    }
+                    
+                    PrintStream ps = new PrintStream(rspns.raw().getOutputStream());
+                    try {
+                        //TODO add a callback for live response
+                        Node n = getNode(content);
+                        ps.println(" <a href='/node/" + n.getId() + "'>Finished.</a>. " );
+                    } catch (Exception ex) {
+                        Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
+                        ps.println(" Error: " + ex.toString());
+                        return ex.toString();
+                    }
+                    ps.close();
+                }
+                catch (IOException e) {
+                    return e.toString();
+                }
+                
+                return null;
+            }
+        
+        abstract public Node getNode(String content);
+    }
+    
     public KBWeb(final KB kb) {
         this.kb = kb;
         get(new Route("/") {
@@ -226,23 +271,22 @@ public class KBWeb {
         });
         
         
-        get(new Route("/add/rss/*") {
+        post(new Route("/add/rss") {
 
             @Override
             public Object handle(Request rqst, Response rspns) {
                 htmlHeader(rspns);
                 
-                String url = rqst.pathInfo();
-                String rssURL = url.substring("/read/rss/".length() );
+                String rssURL = Jsoup.clean(rqst.queryParams("content"), Whitelist.simpleText());
                 
 
                 try {
                     PrintStream ps = new PrintStream(rspns.raw().getOutputStream());
                     try {
-                        ps.println("Loading: " + rssURL + "...");
+                        ps.println("Loading: " + rssURL + "... ");
                         //TODO add a callback for live response
                         Node n = new KBLoader(kb).loadRSS(rssURL);
-                        ps.println(" <a href='/node/" + n.getId() + "'>Finished</a>. " );
+                        ps.println(" <a href='/node/" + n.getId() + "'>Finishing in background tasks.</a>. " );
                     } catch (Exception ex) {
                         Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
                         ps.println(" Error: " + ex.toString());
@@ -251,44 +295,22 @@ public class KBWeb {
                     ps.close();
                 }
                 catch (IOException e) {
-                    
+                    return e.toString();
                 }
                 
                 return null;
             }
             
         });
-        post(new Route("/add/text") {
-
-            @Override
-            public Object handle(Request rqst, Response rspns) {
-                htmlHeader(rspns);
-                
-                String content = rqst.queryParams("content");
-
-                return content;
-
-//                try {
-//                    PrintStream ps = new PrintStream(rspns.raw().getOutputStream());
-//                    try {
-//                        ps.println("Loading: " + rssURL + "...");
-//                        //TODO add a callback for live response
-//                        Node n = new KBLoader(kb).loadRSS(rssURL);
-//                        ps.println(" <a href='/node/" + n.getId() + "'>Finished</a>. " );
-//                    } catch (Exception ex) {
-//                        Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
-//                        ps.println(" Error: " + ex.toString());
-//                        return ex.toString();
-//                    }
-//                    ps.close();
-//                }
-//                catch (IOException e) {
-//                    
-//                }
-                
-                //return null;
-            }
-            
+        post(new LoadRoute("/add/text") {
+            @Override public Node getNode(String content) {
+                return new KBLoader(kb).loadText(content);
+            }            
+        });
+        post(new LoadRoute("/add/text_sentence") {
+            @Override public Node getNode(String content) {
+                return new KBLoader(kb).loadTextSentences(content);
+            }            
         });
         
         get(new Route("/graph/:nodeid") {

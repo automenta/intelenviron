@@ -27,12 +27,7 @@ and open the template in the editor.
 
                 var mode = document.getElementById('loadmode').value;
                 
-                if (mode == 'text') {
-                    target = '/add/text';
-                }
-                else {
-                    target = null;
-                }
+                target = '/add/' + mode;
 
                 if(target!=null) {
                     $("#output")  
