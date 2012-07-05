@@ -52,7 +52,7 @@
         }
     }
     
-    function toggleSpeakSpeech(f) {
+    function speakSpeech(f) {
         $.getScript("/static/speak/speakClient.js", function(data, textStatus, jqxhr) {
             var content = $('#_Content').text();            
             speak.play(content, {}, f );
@@ -62,10 +62,16 @@
     var stopAutospeech = false;
     function startSpeakAutoSpeech() {
         stopAutospeech = false;
-        toggleSpeakSpeech( function() { if (!stopAutospeech) goNext( function() { if (!stopAutospeech) startSpeakAutoSpeech(); });  } );
+        $('#speaker_icon').attr('src', '/static/icons/sound_playing.png');
+        
+        if (nextID!=null)
+            speakSpeech( function() { if (!stopAutospeech) goNext( function() { if (!stopAutospeech) startSpeakAutoSpeech(); });  } );
+        else
+            speakSpeech( function() { stopSpeakAutoSpeech();  } );
     }
     function stopSpeakAutoSpeech() {
         stopAutospeech = true;
+        $('#speaker_icon').attr('src', '/static/icons/simplistica/sound.png');
         $('#audio').html('');
     }
     
@@ -255,6 +261,8 @@
         //TODO update through AJAX to avoid reloading entire page
         if (nextID!=null)
            setNode(nextID, f);
+       else
+           stopAutospeech();
     }
     
     function setNode(id, f) {

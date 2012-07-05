@@ -1,4 +1,3 @@
-<link rel="stylesheet" type="text/css" href="/static/cortexit/cortexit.css" />
 <!--<link rel="shortcut icon" href="/static/cortexit/favicon.ico" />-->
 
 <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/base/jquery-ui.css" type="text/css" media="all" />
@@ -9,6 +8,9 @@
 <script type="text/javascript" src="/static/superfish/js/superfish.js"></script>
 
 <link id="themeCSS" rel="stylesheet" type="text/css"  />
+
+<link rel="stylesheet" type="text/css" href="/static/cortexit/cortexit.css" />
+
 <script type="text/javascript" src="/static/cortexit/cortexit.js"></script>
 
 <body onload="setup();">
@@ -18,9 +20,9 @@
         <ul class="sf-menu">
             <li><a href="javascript:newAddWindow()" class="tooltip"><img width="48px" height="48px" src="/static/icons/simplistica/add.png" alt="Add"/><span>Add</span></a></li>
             
-            <li><a href="#" class="tooltip"><img width="48px" height="48px" src="/static/icons/simplistica/sound.png" alt="Speak"/><span>Speech</span></a>
+            <li><a href="#" class="tooltip"><img id="speaker_icon" width="48px" height="48px" src="/static/icons/simplistica/sound.png" alt="Speak"/><span>Speech</span></a>
                 <ul>
-                    <li><a href="javascript:toggleSpeakSpeech(function() {})">Speak.js Speech</a></li>
+                    <li><a href="javascript:speakSpeech(function() {})">Speak.js Speech</a></li>
                     <li><a href="javascript:startSpeakAutoSpeech()">Start Speak.js Autoplay</a></li>
                     <li><a href="javascript:stopSpeakAutoSpeech()">Stop Speak.js Autoplay</a></li>
                     <li><a href="javascript:toggleVozmeSpeech()">Toggle VozMe Speech</a></li>
