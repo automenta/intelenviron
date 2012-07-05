@@ -69,7 +69,6 @@ public class KB {
     public Node newNode(Class c, String id) {
         Node n = graph.createNode();
         n.setProperty(ID, c.getSimpleName() + "." +id);
-        n.setProperty(NAME, id);
         
         return n;
     }

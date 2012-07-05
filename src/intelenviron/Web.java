@@ -86,17 +86,22 @@ public class Web {
             return;
         }
         
-        if (append==null) {
-            final long len = f.length();
-            rspns.header("Content-Length", Long.toString(len));
+        byte[] appendEncoded = null;
+        long len = f.length();
+        
+        if (append!=null) {
+            appendEncoded = UTF8.encode(append);
+            len += appendEncoded.length;
         }
+        
+        rspns.header("Content-Length", Long.toString(len));
         
         final FileInputStream in = new FileInputStream(f);
         
         IOUtils.copy(in, os);
 
         if (append!=null)
-            os.write(UTF8.encode(append));
+            os.write(appendEncoded);
         
         in.close();
         os.close();

@@ -83,7 +83,15 @@
         if (content == null)
             content = '';
         
-        var line = '<div id="mainContent"><strong>' + node.name +  '</strong><br/>' + content + '</div>';
+        var title;
+        if (node.name == null)
+            title = '';
+        else if (node.name == '')
+            title = '';
+        else
+            title = '<strong>' + node.name + '</strong><br/>';
+        
+        var line = '<div id="mainContent">' + title + content + '</div>';
         return line;
     }
     function renderNeighborhood(node) {
@@ -94,6 +102,10 @@
                 var xi = node.ins[ii];
                 var id = xi.id;
                 var name = xi.name;
+                
+                if (name == null) name = xi.preview;
+                if (name == null) name = xi.id;
+
                 var relationship = '';
                 if (xi.via!=null) {
                     relationship = xi.via.name;
@@ -131,6 +143,10 @@
                 var xi = node.outs[ii];
                 var id = xi.id;
                 var name = xi.name;
+                
+                if (name == null) name = xi.preview;
+                if (name == null) name = xi.id;
+                
                 var relationship = '';
                 if (xi.via!=null) {
                     relationship = xi.via.name;
@@ -411,12 +427,18 @@
     function newWindow(theTitle, x) {
         var newID = ("Window" + eid);
         $('#Window').html( "<div id='" + newID + "'>" + x + "</div>" );
-        $('#' + newID).dialog({title: theTitle, width: '50%', height: 400} );
+        $('#' + newID).dialog({title: theTitle, width: '60%', height: 450} );
         $('#' + newID).fadeIn();
         eid++;        
     }
     function newWindowIFrame(theTitle, url) {
         newWindow(theTitle, '<iframe src=\"' + url + '\" width="98%" height="98%"></iframe>');
+    }
+    
+    function newAddWindow() {
+        $.get('/add', function(data) {            
+            newWindow('Add...', data);
+        });
     }
     
 

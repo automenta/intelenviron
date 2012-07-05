@@ -61,18 +61,32 @@ public class KBLoader {
             
         });
     }
+    
+    public static String summarize(String i, int maxLength) {
+        final int previewLength = Math.min(maxLength, i.length());
+        String x = i.substring(0, previewLength);                
+        if (maxLength < i.length())
+            return x + "...";                    
+        return x;
+    }
+    
     public Node loadTextSentences(final String content) {
+        URL target = null;
+        
+        final org.jsoup.nodes.Document doc = Jsoup.parse(content);
+        final String text = doc.text();
+        
         final Node page = kb.getNode(Document.class, UUID.randomUUID().toString(), new Transactable() {
 
             @Override
             public void run(Node n) {
                 n.setProperty("when", new Date().getTime());
+                n.setProperty("name", doc.title());
+                n.setProperty("content", summarize(text, 256));
             }
             
         });
         
-        URL target = null;
-        org.jsoup.nodes.Document doc = Jsoup.parse(content);
         
         if (target != null) {
 //            Elements links = doc.select("a[href]");
@@ -130,7 +144,7 @@ public class KBLoader {
 //            frames.add("_f(\"" + frameEscape(s) + "\");");
             final String ss = s;
             final Node previous = prevNode;
-            Node x = kb.getNode(Document.class, UUID.randomUUID().toString(), new Transactable() {
+            Node x = kb.getNode(Sentence.class, UUID.randomUUID().toString(), new Transactable() {
                 @Override
                 public void run(Node n) {
                     n.setProperty("content", ss);
@@ -204,9 +218,17 @@ public class KBLoader {
 
     public static class Document {
     }
+    
+    public static class Sentence {
+    }
+
+    public static class Paragraph {
+    }
 
     public static Node getTag(KB kb, String tag) {
-        return kb.getNode(Tag.class, tag.toLowerCase());
+        Node n = kb.getNode(Tag.class, tag.toLowerCase());
+        n.setProperty("name", tag);
+        return n;
     }
 
     public static Node getMedia(KB kb, String url) {
@@ -246,7 +268,7 @@ public class KBLoader {
 
     }
 
-    public void addTweet(final KB kb, final Tweet s) {
+    public Node addTweet(final KB kb, final Tweet s) {
 
         final Node author = getUser(kb, s);
 
@@ -256,6 +278,8 @@ public class KBLoader {
             public void run(Node n) {
                 n.setProperty("when", s.getCreatedAt().getTime());
                 n.setProperty("content", s.getText());
+                n.setProperty("url", "http://twitter.com/" + s.getFromUser() + "/status/" + Long.toString( s.getId() ));
+                
                 if (s.getGeoLocation() != null) {
                     n.setProperty("where", s.getGeoLocation().getLatitude() + "," + s.getGeoLocation().getLongitude());
                 }
@@ -289,26 +313,35 @@ public class KBLoader {
             }
         });
 
+        return n;
 
     }
 
-    public void addTimeline(KB kb, String username) throws TwitterException {
+    public Node addTimeline(KB kb, String username) throws TwitterException {
         ResponseList<Status> tt = twitter.getUserTimeline(username);
         Node previousStatus = null;
+        User user = null;
         for (int i = 0; i < tt.size(); i++) {
             Status s = tt.get(i);
+            if (user==null) user = s.getUser();
             previousStatus = addStatus(kb, s, previousStatus);
         }
+        return getUser(kb, user);
     }
 
-    public void addSearch(KB kb, String query) throws TwitterException {
+    public Node addSearch(KB kb, String query) throws TwitterException {
         QueryResult tt = twitter.search(new Query(query));
+        
+        Node tag = getTag(kb, query);
+        
         for (Tweet t : tt.getTweets()) {
-            addTweet(kb, t);
+            Node n = addTweet(kb, t);
+            kb.relateOnce(tag, n, MENTIONS);
         }
+        return tag;
     }
 
-    public Node loadRSS(String rssURL) throws Exception {
+    public Node addRSS(String rssURL) throws Exception {
 
         final RssFeed feed = rss.load(rssURL);
 
@@ -331,13 +364,15 @@ public class KBLoader {
         });
         // Gets and iterate the items of the feed 
         List<RssItemBean> items = feed.getItems();
+        
+        Node previous = n;
         for (int i = 0; i < items.size(); i++) {
             final RssItemBean item = items.get(i);
 
-            kb.threads.submit(new Runnable() {
-
-                @Override
-                public void run() {
+//            kb.threads.submit(new Runnable() {
+//
+//                @Override
+//                public void run() {
                     //System.out.println("Title: " + item.getTitle());
                     //System.out.println("Link : " + item.getLink());
                     //System.out.println("Desc.: " + item.getDescription());
@@ -377,8 +412,10 @@ public class KBLoader {
                         }
                     });
                     kb.relateOnce(n, x, CREATES);
-                }
-            });
+                    kb.relateOnce(previous, x, NEXT);
+                    previous = x;
+//                }
+//            });
 
         }
         return n;

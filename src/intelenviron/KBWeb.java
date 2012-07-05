@@ -34,6 +34,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.rest.graphdb.traversal.RestTraversal;
+import twitter4j.TwitterException;
 
 /**
  *
@@ -62,18 +63,29 @@ public class KBWeb {
     public static class NodeSummary {
         public final long id;
         public final String name;
+        public final String preview;
         public final Date modified;
         public List<NodeSummary> ins = null;
         public List<NodeSummary> outs = null;
         public RelationshipSummary via = null;
         private transient final Node node;
         private Map<String,String> prop = null;
-
+        public static final int PREVIEW_LENGTH = 32;
+        
         public NodeSummary(Node node, long id, String name, Date modified) {
             this.node = node;
             this.id = id;
             this.name = name;
             this.modified = modified;
+            
+            String content = node.getProperty("content", "").toString();
+            content = Jsoup.clean(content, Whitelist.simpleText());
+            if (!content.isEmpty()) {
+                preview = KBLoader.summarize(content, PREVIEW_LENGTH).replaceAll("\"", "&quot") + "...";
+            }
+            else
+                preview = null;
+
         }
         
         public static NodeSummary get(Node x, Predicate<Node> include) {
@@ -82,7 +94,9 @@ public class KBWeb {
                     return null;
             
             final String id = Long.toString(x.getId());
-            final String name = x.getProperty("name", x.getProperty("id", id)).toString();
+            String name = x.getProperty("name", "").toString();
+            if (name.isEmpty()) name = null;
+            
 
             Date d = null;
             Object o = x.getProperty("when", null);
@@ -96,6 +110,7 @@ public class KBWeb {
                     d = new Date(Date.parse(datestring));
                 }
             }
+            
 
             return new NodeSummary(x, x.getId(), name, d );            
         }
@@ -126,7 +141,6 @@ public class KBWeb {
                     
             return this;
         }
-        
         public NodeSummary via(Relationship r) {
             this.via = new RelationshipSummary(r.getId(), r.getType().name());
             return this;
@@ -171,6 +185,9 @@ public class KBWeb {
                     try {
                         //TODO add a callback for live response
                         Node n = getNode(content);
+                        if (n == null) {
+                            throw new Exception("Error");
+                        }
                         ps.println(" <a href='/node/" + n.getId() + "'>Finished.</a>. " );
                     } catch (Exception ex) {
                         Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
@@ -263,8 +280,9 @@ public class KBWeb {
                     getStaticBinaryFile("cortexit/cortexit.html", rspns, commands.toString());
                     
                     return null;
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
+                    ex.printStackTrace();
                     return ex.toString();
                 }
             }            
@@ -285,7 +303,7 @@ public class KBWeb {
                     try {
                         ps.println("Loading: " + rssURL + "... ");
                         //TODO add a callback for live response
-                        Node n = new KBLoader(kb).loadRSS(rssURL);
+                        Node n = new KBLoader(kb).addRSS(rssURL);
                         ps.println(" <a href='/node/" + n.getId() + "'>Finishing in background tasks.</a>. " );
                     } catch (Exception ex) {
                         Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
@@ -310,6 +328,26 @@ public class KBWeb {
         post(new LoadRoute("/add/text_sentence") {
             @Override public Node getNode(String content) {
                 return new KBLoader(kb).loadTextSentences(content);
+            }            
+        });
+        post(new LoadRoute("/add/twitter_timeline") {
+            @Override public Node getNode(String content) {
+                try {
+                    return new KBLoader(kb).addTimeline(kb, content);
+                } catch (TwitterException ex) {
+                    Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
+                    return null;
+                }
+            }            
+        });
+        post(new LoadRoute("/add/twitter_search") {
+            @Override public Node getNode(String content) {
+                try {
+                    return new KBLoader(kb).addSearch(kb, content);
+                } catch (TwitterException ex) {
+                    Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
+                    return null;
+                }
             }            
         });
         

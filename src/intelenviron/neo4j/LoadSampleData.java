@@ -25,13 +25,13 @@ public class LoadSampleData {
         new KBLoader(kb).addTimeline(kb, "greatdismal");
         new KBLoader(kb).addTimeline(kb, "cstross");
         
-        new KBLoader(kb).loadRSS("http://www.scoop.it/t/natural-language-programming/rss.xml");
+        new KBLoader(kb).addRSS("http://www.scoop.it/t/natural-language-programming/rss.xml");
 //        new KBLoader(kb).loadRSS("http://www.scoop.it/t/food-fill/rss.xml");
-        new KBLoader(kb).loadRSS("http://www.scoop.it/t/artificial-g-intelligence/rss.xml");
+        new KBLoader(kb).addRSS("http://www.scoop.it/t/artificial-g-intelligence/rss.xml");
 //        new KBLoader(kb).loadRSS("http://www.scoop.it/t/soul-fill/rss.xml");
 
-        new KBLoader(kb).loadRSS("http://rss.cnn.com/rss/cnn_topstories.rss");
-        new KBLoader(kb).loadRSS("http://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml");        
+        new KBLoader(kb).addRSS("http://rss.cnn.com/rss/cnn_topstories.rss");
+        new KBLoader(kb).addRSS("http://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml");        
         
         kb.shutdown();
     }
