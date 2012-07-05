@@ -398,8 +398,6 @@
         element.innerHTML = '<img src=\"' + imagesrc + '\"/>';
     }
     
-    var qI = 0;
-
 
     function graphIt() {
         newWindowIFrame('Neighborhood Graph', '/graph/' + currentNode['id']);
@@ -419,17 +417,21 @@
         
         newWindowIFrame('Image results for: ' + selection, iurl);
         
-        qI++;
-
     }
 
     var eid = 0;
     function newWindow(theTitle, x) {
         var newID = ("Window" + eid);
-        $('#Window').html( "<div id='" + newID + "'>" + x + "</div>" );
-        $('#' + newID).dialog({title: theTitle, width: '60%', height: 450} );
-        $('#' + newID).fadeIn();
         eid++;        
+        $('#Window').append( "<div id='" + newID + "'>" + x + "</div>" );
+
+        var w = $("body").find('#' + newID);
+        
+//        $('#' + newID).dialog({title: theTitle, width: '60%', height: 450} );
+//        $('#' + newID).fadeIn();
+        w.dialog({title: theTitle, width: '60%', height: 450} );
+        w.fadeIn();
+
     }
     function newWindowIFrame(theTitle, url) {
         newWindow(theTitle, '<iframe src=\"' + url + '\" width="98%" height="98%"></iframe>');

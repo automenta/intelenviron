@@ -304,7 +304,7 @@ public class KBWeb {
                         ps.println("Loading: " + rssURL + "... ");
                         //TODO add a callback for live response
                         Node n = new KBLoader(kb).addRSS(rssURL);
-                        ps.println(" <a href='/node/" + n.getId() + "'>Finishing in background tasks.</a>. " );
+                        ps.println(" <a href='/node/" + n.getId() + "'>Finished. " );
                     } catch (Exception ex) {
                         Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
                         ps.println(" Error: " + ex.toString());
