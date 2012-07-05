@@ -49,9 +49,10 @@ public abstract class TwitterUpdater {
             
             QueryResult results = t.search(query);
             
-            for (Tweet tw : results.getTweets()) {
-                onTweet(tw);
-                lastTweet = tw.getId();
+            for (Object tw : results.getTweets()) {
+                twitter4j.Tweet tt = (twitter4j.Tweet)tw;
+                onTweet(tt);
+                lastTweet = tt.getId();
             }
         } catch (TwitterException ex) {
             Logger.getLogger(TwitterUpdater.class.getName()).log(Level.SEVERE, null, ex);

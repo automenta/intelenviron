@@ -7,6 +7,7 @@ package intelenviron;
 import intelenviron.neo4j.KBLoader.Transactable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -55,7 +56,7 @@ public class KB {
 //    }
     
     public Relationship relateOnce(final Node from, final Node to, final RelationshipType type) {
-        Iterable<Relationship> rr = from.getRelationships(type);
+        Iterable<Relationship> rr = from.getRelationships(type, Direction.OUTGOING);
         if (rr != null) {
             for (final Relationship r : rr) {
                 if (r.getEndNode().getId() == to.getId())
@@ -99,28 +100,28 @@ public class KB {
         //return getNode(c.getSimpleName() + "." + id);
     }
     
-    public Node getNode(final Class c, final String id, final Transactable transactable) {
+//    public Node getNode(final Class c, final String id, final Transactable transactable) {
+//
+//        Node n = getNode(c.getSimpleName() + "." + id);
+//        
+//        if (n != null) {
+//            if (transactable!=null) {
+//                transactable.run(n);
+//            }
+//            return n;
+//        }
+//        else {        
+//            n = newNode(c, id);
+//
+//            if (transactable!=null)
+//                transactable.run(n);
+//        }
+//
+//        
+//        return n;
+//    }
 
-        Node n = getNode(c.getSimpleName() + "." + id);
-        
-        if (n != null) {
-            if (transactable!=null) {
-                transactable.run(n);
-            }
-            return n;
-        }
-        else {        
-            n = newNode(c, id);
-
-            if (transactable!=null)
-                transactable.run(n);
-        }
-
-        
-        return n;
-    }
-
-    public Node getNodeTransaction(Class c, String id, Transactable transactable) {
+    public Node getNode(Class c, String id, Transactable transactable) {
 
         Node n = getNode(c.getSimpleName() + "." + id);
         if (n != null) {

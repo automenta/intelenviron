@@ -4,8 +4,6 @@
  */
 package intelenviron;
 
-import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
-import com.sun.org.apache.xml.internal.security.utils.Base64;
 import java.io.*;
 import java.util.Date;
 import java.util.UUID;
@@ -14,6 +12,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import org.apache.commons.io.IOUtils;
+import org.bouncycastle.util.encoders.Base64;
 import org.neo4j.helpers.UTF8;
 import spark.*;
 import static spark.Spark.*;
@@ -147,7 +146,7 @@ public class Web {
                     String authHeader = request.headers("Authorization");
                     if ((authHeader != null) && (authHeader.startsWith("Basic"))) {
                         authHeader = authHeader.substring("Basic".length()).trim();
-                        try {
+                        //try {
                             authHeader = new String(Base64.decode(authHeader));
                             String user = authHeader.split(":")[0];
                             String password = authHeader.split(":")[1];
@@ -157,9 +156,9 @@ public class Web {
                                 authenticated = true;
                             }
 
-                        } catch (Base64DecodingException ex) {
-                            Logger.getLogger(Web.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+//                        } catch (Base64DecodingException ex) {
+//                            Logger.getLogger(Web.class.getName()).log(Level.SEVERE, null, ex);
+//                        }
 
                     }
                 }

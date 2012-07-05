@@ -9,7 +9,6 @@ import intelenviron.KB;
 import intelenviron.Session;
 import java.net.URL;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import mx.bigdata.jcalais.CalaisResponse;
@@ -318,11 +317,11 @@ public class KBLoader {
     }
 
     public Node addTimeline(KB kb, String username) throws TwitterException {
-        ResponseList<Status> tt = twitter.getUserTimeline(username);
+        ResponseList tt = twitter.getUserTimeline(username);
         Node previousStatus = null;
         User user = null;
         for (int i = 0; i < tt.size(); i++) {
-            Status s = tt.get(i);
+            Status s = (Status)tt.get(i);
             if (user==null) user = s.getUser();
             previousStatus = addStatus(kb, s, previousStatus);
         }
@@ -334,8 +333,8 @@ public class KBLoader {
         
         Node tag = getTag(kb, query);
         
-        for (Tweet t : tt.getTweets()) {
-            Node n = addTweet(kb, t);
+        for (Object t : tt.getTweets()) {
+            Node n = addTweet(kb, (twitter4j.Tweet)t);
             kb.relateOnce(tag, n, MENTIONS);
         }
         return tag;
@@ -354,7 +353,7 @@ public class KBLoader {
         RssImageBean image = feed.getImage();
         //System.out.println("Feed Image: " + image.getUrl());
 
-        final Node n = kb.getNode(RssFeed.class, feed.getChannel().getLink(), new KBLoader.Transactable() {
+        final Node rootn = kb.getNode(RssFeed.class, feed.getChannel().getLink(), new KBLoader.Transactable() {
 
             @Override
             public void run(Node n) {
@@ -365,7 +364,7 @@ public class KBLoader {
         // Gets and iterate the items of the feed 
         List<RssItemBean> items = feed.getItems();
         
-        Node previous = n;
+        Node previous = rootn;
         for (int i = 0; i < items.size(); i++) {
             final RssItemBean item = items.get(i);
 
@@ -392,7 +391,7 @@ public class KBLoader {
 
                     final CalaisResponse crr = cr;
 
-                    System.out.println("adding: " + item);
+                    final Node pprevious = previous;
                     Node x = kb.getNode(Document.class, item.getLink(), new KBLoader.Transactable() {
 
                         @Override
@@ -409,16 +408,14 @@ public class KBLoader {
                                 calais.apply(kb, KBLoader.this, n, crr);
                             }
 
+                            kb.relateOnce(rootn, n, CREATES);
+                            kb.relateOnce(pprevious, n, NEXT);
                         }
                     });
-                    kb.relateOnce(n, x, CREATES);
-                    kb.relateOnce(previous, x, NEXT);
                     previous = x;
-//                }
-//            });
 
         }
-        return n;
+        return rootn;
 
 
     }
