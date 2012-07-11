@@ -11,6 +11,7 @@
 
 <link rel="stylesheet" type="text/css" href="/static/cortexit/cortexit.css" />
 
+
 <script type="text/javascript" src="/static/cortexit/cortexit.js"></script>
 
 <body onload="setup();">
@@ -18,7 +19,48 @@
     <div id="_Top" class="menu">
             
         <ul class="sf-menu">
-            <li><a href="javascript:newAddWindow()" class="tooltip"><img width="48px" height="48px" src="/static/icons/simplistica/add.png" alt="Add"/><span>Add</span></a></li>
+            <li><a href="/node/new" class="tooltip"><img width="48px" height="48px" src="/static/icons/simplistica/add.png" alt="Add"/><span>Add</span></a>
+                <ul><li>
+                    <script>
+                        function apply() {
+                            var t = document.getElementById('_Content').value;
+
+                            var mode = document.getElementById('loadmode').value;
+
+                            target = '/add/' + mode;
+
+                            if(target!=null) {
+                                $("#output")  
+                                    .html("<img src='/static/icons/loading.gif' width='200px' height='100px' alt='Loading...'/>")  
+                                    .load(target, {content: t});  
+                            }
+
+                        }
+                    </script>
+                    <div id="editfunctions">
+                        <div>
+                            <select id="loadmode">
+                                <option value="text">Text (as-is)</option>
+                                <option value="text_sentence">Text, by Sentence</option>
+                                <option value="rss">RSS Feed</option>
+                                <option value="twitter_timeline">Twitter Timeline</option>        
+                                <option value="twitter_search">Twitter Search</option>        
+                                <option value="text_paragraph">Text, by Paragraph (not impl yet)</option>
+                                <option value="youtube">Youtube Channel  (not impl yet)</option>        
+                            </select>
+                        </div>
+
+                        <div>
+                            <button type="button" onclick="apply();">Load</button>
+                        </div>
+
+                        <div id="output">
+                        </div>
+
+                    </div>
+                </li></ul>
+            
+            </li>
             
             <li><a href="#" class="tooltip"><img id="speaker_icon" width="48px" height="48px" src="/static/icons/simplistica/sound.png" alt="Speak"/><span>Speech</span></a>
                 <ul>

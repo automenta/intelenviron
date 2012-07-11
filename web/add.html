@@ -9,33 +9,6 @@
         margin-bottom: 0.2em;
     }            
 </style>
-<script>
-    function load() {
-        var t = document.getElementById('wysihtml5-textarea').value;
-
-        var mode = document.getElementById('loadmode').value;
-
-        target = '/add/' + mode;
-
-        if(target!=null) {
-            $("#output")  
-                .html("<img src='/static/icons/loading.gif' width='200px' height='100px' alt='Loading...'/>")  
-                .load(target, {content: t});  
-        }
-
-    }
-</script>
-<div style="float: left; margin-bottom: 0.5em">
-    <select id="loadmode">
-        <option value="text">Text (as-is)</option>
-        <option value="text_sentence">Text, by Sentence</option>
-        <option value="rss">RSS Feed</option>
-        <option value="twitter_timeline">Twitter Timeline</option>        
-        <option value="twitter_search">Twitter Search</option>        
-        <option value="text_paragraph">Text, by Paragraph (not impl yet)</option>
-        <option value="youtube">Youtube Channel  (not impl yet)</option>        
-    </select>
-</div>
 
 <form id="textentry">
     <div id="wysihtml5-toolbar" style="display: none;">
@@ -75,9 +48,4 @@
 </script>
 
 
-<div style="float: right">
-    <button type="button" onclick="load();">Load</button>
-</div>
 
-<div style="clear: both; width: 100%" id="output" >
-</div>

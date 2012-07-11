@@ -55,7 +55,7 @@
     function speakSpeech(f) {
         $.getScript("/static/speak/speakClient.js", function(data, textStatus, jqxhr) {
             var content = $('#_Content').text();            
-            speak.play(content, {}, f );
+            speak.play(content, {amplitude: 100, wordgap: 5, pitch: 25, speed: 200}, f );
         });
     }
 
@@ -85,17 +85,23 @@
     }
 
     function renderMainContent(node) {
-        var content = node.prop['content'];
-        if (content == null)
-            content = '';
-        
-        var title;
-        if (node.name == null)
+        var content, title;
+
+        if (node != null) {
+            content = node.prop['content'];
+            if (content == null)
+                content = '';
+            if (node.name == null)
+                title = '';
+            else if (node.name == '')
+                title = '';
+            else
+                title = '<strong>' + node.name + '</strong><br/>';
+        }
+        else {
             title = '';
-        else if (node.name == '')
-            title = '';
-        else
-            title = '<strong>' + node.name + '</strong><br/>';
+            content = "I'm thinking about...";        
+        }
         
         var line = '<div id="mainContent">' + title + content + '</div>';
         return line;
@@ -176,72 +182,57 @@
         var content = document.getElementById("_Content");
         content.innerHTML = renderMainContent(currentNode);
 
-        var neighbor = document.getElementById("Neighborhood");
-        neighbor.innerHTML = renderNeighborhood(currentNode);
-
-
-        var prev = document.getElementById("_Prev");
-        if (f == 0) {
-            prev.innerHTML = '&nbsp;';
-        }
-        else {
-            prev.innerHTML = '<a href="javascript:goPreviousExplicit()"><img src="/static/icons/left.png" height="32px" width="32px"/></a>';
-        }
-
-        var next = document.getElementById("_Next");
-        if (f == nodes.length-1) {
-            next.innerHTML = '&nbsp;';
-        }
-        else {
-            next.innerHTML = '<a href="javascript:goNextExplicit()"><img src="/static/icons/right.png" height="32px" width="32px"/></a>';
-        }
-
-        prevID = nextID = null;
-        
-        for (var ii in currentNode.ins) {
-            var xi = currentNode.ins[ii];
-            var id = xi.id;
-            var relationship = '';
-            if (xi.via!=null) {
-                relationship = xi.via.name;
+        if (currentNode!=null) {
+            var neighbor = document.getElementById("Neighborhood");
+            neighbor.innerHTML = renderNeighborhood(currentNode);
+            
+            var prev = document.getElementById("_Prev");
+            if (f == 0) {
+                prev.innerHTML = '&nbsp;';
             }
-            if (relationship == 'next')
-                prevID = id;
-        }
-        for (var ii in currentNode.outs) {
-            var xi = currentNode.outs[ii];
-            var id = xi.id;
-            var relationship = '';
-            if (xi.via!=null) {
-                relationship = xi.via.name;
+            else {
+                prev.innerHTML = '<a href="javascript:goPreviousExplicit()"><img src="/static/icons/left.png" height="32px" width="32px"/></a>';
             }
-            if (relationship == 'next')
-                nextID = id;
+
+            var next = document.getElementById("_Next");
+            if (f == nodes.length-1) {
+                next.innerHTML = '&nbsp;';
+            }
+            else {
+                next.innerHTML = '<a href="javascript:goNextExplicit()"><img src="/static/icons/right.png" height="32px" width="32px"/></a>';
+            }
+
+            prevID = nextID = null;
+
+            for (var ii in currentNode.ins) {
+                var xi = currentNode.ins[ii];
+                var id = xi.id;
+                var relationship = '';
+                if (xi.via!=null) {
+                    relationship = xi.via.name;
+                }
+                if (relationship == 'next')
+                    prevID = id;
+            }
+            for (var ii in currentNode.outs) {
+                var xi = currentNode.outs[ii];
+                var id = xi.id;
+                var relationship = '';
+                if (xi.via!=null) {
+                    relationship = xi.via.name;
+                }
+                if (relationship == 'next')
+                    nextID = id;
+            }
+            var status = document.getElementById("Status");
+            if ((prevID!=null) || (nextID!=null))
+                status.innerHTML = ((prevID!=null) ? "<--" : "") + " | " + ((nextID!=null) ? "-->" : "");
+            else
+                status.innerHTML = '';
         }
-        var status = document.getElementById("Status");
-        if ((prevID!=null) || (nextID!=null))
-            status.innerHTML = ((prevID!=null) ? "<--" : "") + " | " + ((nextID!=null) ? "-->" : "");
-        else
-            status.innerHTML = '';
         
         updateFonts();
         
-//        var ex8 = new Animator(
-//            {
-//                duration: 400,
-//                interval: 40,
-//                onComplete: function() {
-//                }
-//            }
-//        ).addSubject(
-//            new NumericalStyleSubject(
-//                content.id,
-//                "opacity",
-//                0.1,
-//                1.0)
-//        );
-//        ex8.toggle();
-
         $("#_Content").css({opacity: 1.0});
 
     }
@@ -445,12 +436,6 @@
         newWindow(theTitle, '<iframe src=\"' + url + '\" width="98%" height="98%"></iframe>');
     }
     
-    function newAddWindow() {
-        $.get('/add', function(data) {            
-            newWindow('Add...', data);
-        });
-    }
-    
 
     function setTheme(theme) {       
         currentTheme = theme;
@@ -517,17 +502,20 @@
 //    </div>
 
 
+    
     var editing = false;
-    function toggleEdit() {
-        //id="_Content" contentEditable="false"        
-        if (editing) {
+    function setEditable(e) {
+        if (!e) {
             $('#_Content').attr('contentEditable', 'false');
-            editing = false;
         }
         else {
             $('#_Content').attr('contentEditable', 'true');
-            editing = true;
         }
+        editing = e;
+        
+    }
+    function toggleEdit() {
+        setEditable(!editing);
     }
 
 

@@ -206,6 +206,17 @@ public class KBWeb {
         abstract public Node getNode(String content);
     }
     
+    public static String readyScript(String javascript) {
+        StringBuffer commands = new StringBuffer();
+        commands.append("<script type='text/javascript'>");
+        commands.append("$(document).ready(function(){");
+        commands.append(javascript);
+        commands.append("});");
+        commands.append("</script>");
+        return commands.toString();
+    }
+
+    
     public KBWeb(final KB kb) {
         this.kb = kb;
         get(new Route("/") {
@@ -258,6 +269,22 @@ public class KBWeb {
         
         getStatic("/add", "add.html");
         
+        get(new Route("/node/new") {
+            @Override
+            public Object handle(Request rqst, Response rspns) {
+                try {
+                    htmlHeader(rspns);
+                    getStaticBinaryFile("cortexit/cortexit.html", rspns, readyScript("setEditable(true);showNode(0);"));
+                    return null;
+                } catch (Exception ex) {
+                    Logger.getLogger(KBWeb.class.getName()).log(Level.SEVERE, null, ex);
+                    ex.printStackTrace();
+                    return ex.toString();
+                }
+            }            
+            
+        });
+        
         get(new Route("/node/:id") {
 
             @Override
@@ -270,14 +297,9 @@ public class KBWeb {
                             );
                     
                     htmlHeader(rspns);
-                    StringBuffer commands = new StringBuffer();
-                    commands.append("<script type='text/javascript'>");
-                    commands.append("$(document).ready(function(){");
-                    commands.append("  _n(" + nodeData + "); showNode(0);");
-                    commands.append("});");
-                    commands.append("</script>");
+                    final String commands = readyScript("  _n(" + nodeData + "); showNode(0);");
                     
-                    getStaticBinaryFile("cortexit/cortexit.html", rspns, commands.toString());
+                    getStaticBinaryFile("cortexit/cortexit.html", rspns, commands);
                     
                     return null;
                 } catch (Exception ex) {
