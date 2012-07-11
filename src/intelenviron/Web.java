@@ -233,7 +233,7 @@ public class Web {
             public Object handle(Request rqst, Response rspns) {
                 rspns.header("Content-type", "text/html");
                 
-                String result = Intelenviron.exec("tail -n 32 data/log");
+                String result = RunPython.exec("tail -n 32 data/log");
                                
                 return "<html><pre>" + result + "</pre></html>";
             }

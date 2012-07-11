@@ -140,6 +140,21 @@ a, a.visited {
     width: 20em;
 }
 
+/*
+
+#_Top .sf-menu li:nth-child(1) { background-color: #009; }
+#_Top .sf-menu li:nth-child(2) { background-color: #018; }
+#_Top .sf-menu li:nth-child(3) { background-color: #027; }
+#_Top .sf-menu li:nth-child(4) { background-color: #036; }
+#_Top .sf-menu li:nth-child(5) { background-color: #045; }
+#_Top .sf-menu li:nth-child(6) { background-color: #054; }
+#_Top .sf-menu li:nth-child(7) { background-color: #063; }
+#_Top .sf-menu li:nth-child(8) { background-color: #072; }
+*/
+.sf-menu a.sf-with-ul {
+    padding-right: 0;
+}
+
 
 #_Control {
     font-family: Arial, Sans;

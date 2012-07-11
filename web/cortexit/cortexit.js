@@ -1,8 +1,3 @@
-/* 
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 
     var defaultTheme = 'default-black';
     var minFrameLength = 8;
@@ -15,7 +10,13 @@
     var speechEnabled = false;
     var prevID = null;
     var nextID = null;
-
+    
+    var widgets = { };
+    
+    function saveWidgets() {
+        $.totalStorage('widgets', widgets);        
+    }
+    
     function enableVozmeSpeech(line) {
         speechEnabled = true;
 
@@ -182,9 +183,18 @@
         var content = document.getElementById("_Content");
         content.innerHTML = renderMainContent(currentNode);
 
+        $('#_Content').attr('contentEditable', widgets['Edit']);
+
         if (currentNode!=null) {
-            var neighbor = document.getElementById("Neighborhood");
-            neighbor.innerHTML = renderNeighborhood(currentNode);
+            
+            if (widgets['Neighborhood']) { 
+                $("#Neighborhood").html( renderNeighborhood(currentNode) );
+                $("#Neighborhood").show();
+            }
+            else {
+                $("#Neighborhood").hide();
+            }
+            
             
             var prev = document.getElementById("_Prev");
             if (f == 0) {
@@ -231,10 +241,19 @@
                 status.innerHTML = '';
         }
         
+        if (widgets["Edit"]) {
+            $('#Edit').show();
+        }
+        else {
+            $('#Edit').hide();                
+        }
+
+        
         updateFonts();
         
         $("#_Content").css({opacity: 1.0});
 
+        saveWidgets();
     }
 
     function goPrevious() {
@@ -390,7 +409,12 @@
             font.onmousewheel= onFontSpin;
         }
 
-
+        var w = $.totalStorage('widgets');
+        if (w != undefined) {
+            widgets = w;
+        }
+        
+        
     }
 
     function enlargeImage(element, imagesrc) {
@@ -455,7 +479,8 @@
             keycode = e.which;
         }
         
-        if (!editing) {
+        if (!widgets['Edit']) {
+            
             if (keycode == 37) {
                 //left
                 goPreviousExplicit();
@@ -502,20 +527,37 @@
 //    </div>
 
 
+    function saveContent() {
+        currentNode.prop['content'] = $('#_Content').html();
+    }
     
-    var editing = false;
+    function ensureContentSaved() {
+        if (confirm("Save edits?")) { 
+            saveContent();
+        }
+
+    }
+    var oldContent = '';
     function setEditable(e) {
+        widgets['Edit'] = e;
+        
         if (!e) {
-            $('#_Content').attr('contentEditable', 'false');
+            if (oldContent != $('#_Content').html())
+                ensureContentSaved();
         }
         else {
-            $('#_Content').attr('contentEditable', 'true');
         }
-        editing = e;
+        oldContent = $('#_Content').html();
         
+        showNode(0);
     }
+    
     function toggleEdit() {
-        setEditable(!editing);
+        setEditable(!widgets['Edit']);        
+    }
+    function toggleNeighborhood() {
+        widgets['Neighborhood'] = !widgets['Neighborhood'];
+        showNode(0);
     }
 
 

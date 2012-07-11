@@ -14,7 +14,7 @@ import org.python.util.PythonInterpreter;
  *
  * @author me
  */
-public class Intelenviron {
+public class RunPython {
     
     public static String exec(String cmd) {
         try {
@@ -42,7 +42,7 @@ public class Intelenviron {
             outFile.append(new Date().toString() + " " + s.replaceAll("\'", "\\\'") + "\n"); //writes to file
             outFile.close();
         } catch (IOException ex) {
-            Logger.getLogger(Intelenviron.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(RunPython.class.getName()).log(Level.SEVERE, null, ex);
         } 
     }
     
