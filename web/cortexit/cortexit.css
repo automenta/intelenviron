@@ -151,8 +151,18 @@ a, a.visited {
 #_Top .sf-menu li:nth-child(7) { background-color: #063; }
 #_Top .sf-menu li:nth-child(8) { background-color: #072; }
 */
+#_Top .sf-menu li {
+    margin-right: 0.3em;
+}
+
+.sf-menu a  {
+    padding: 0;
+}
 .sf-menu a.sf-with-ul {
     padding-right: 0;
+}
+.MenuButtonHighlighted {
+    background-color: white;
 }
 
 

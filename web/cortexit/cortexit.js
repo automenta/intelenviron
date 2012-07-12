@@ -189,9 +189,11 @@
             
             if (widgets['Neighborhood']) { 
                 $("#Neighborhood").html( renderNeighborhood(currentNode) );
+                highlightButton('NeighborhoodButton', true);
                 $("#Neighborhood").show();
             }
             else {
+                highlightButton('NeighborhoodButton', false);
                 $("#Neighborhood").hide();
             }
             
@@ -243,9 +245,11 @@
         
         if (widgets["Edit"]) {
             $('#Edit').show();
+            highlightButton('EditButton', true);
         }
         else {
             $('#Edit').hide();                
+            highlightButton('EditButton', false);
         }
 
         
@@ -287,6 +291,14 @@
                 f();
         });    
         
+    }
+
+    function highlightButton(i, highlighted) {
+        var x = $('#' + i);
+        if (highlighted)
+            x.addClass('MenuButtonHighlighted');
+        else
+            x.removeClass('MenuButtonHighlighted');
     }
 
     function updateFont(c) {
@@ -506,9 +518,9 @@
         e.className='';
     }
     
-    function setOriginal(o) {
-        pageurl = o;
-    }
+//    function setOriginal(o) {
+//        pageurl = o;
+//    }
     
         
 //    function showHelp() {
@@ -537,17 +549,18 @@
         }
 
     }
-    var oldContent = '';
+    
+    var contentBeforeEdit = '';
     function setEditable(e) {
         widgets['Edit'] = e;
         
         if (!e) {
-            if (oldContent != $('#_Content').html())
+            if (contentBeforeEdit != $('#_Content').html())
                 ensureContentSaved();
         }
         else {
         }
-        oldContent = $('#_Content').html();
+        contentBeforeEdit = $('#_Content').html();
         
         showNode(0);
     }

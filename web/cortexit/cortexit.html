@@ -21,7 +21,11 @@
             
         <ul class="sf-menu">
             <li>
-                <a href="/node/new" class="tooltip"><img width="48px" height="48px" src="/static/icons/simplistica/add.png" alt="Add"/><span>Add</span></a>            
+                <a href="/node/new" class="tooltip"><img width="48px" height="48px" src="/static/icons/simplistica/add.png" alt="New"/><span>New</span></a>
+                <ul>
+                    <li><a href="/node/new">New node...</a></li>
+                    <li>Duplicate this node...</li>
+                </ul>
             </li>
             <li id="EditButton"><a href="javascript:toggleEdit();" class="tooltip"><img width="48px" height="48px" src="/static/icons/simplistica/page_edit.png" alt="Edit"/><span>Edit</span></a>
                 <ul>
@@ -37,9 +41,8 @@
             
             <li><a href="#" class="tooltip"><img id="speaker_icon" width="48px" height="48px" src="/static/icons/simplistica/sound.png" alt="Speak"/><span>Speech</span></a>
                 <ul>
-                    <li><a href="javascript:speakSpeech(function() {})">Speak.js Speech</a></li>
-                    <li><a href="javascript:startSpeakAutoSpeech()">Start Speak.js Autoplay</a></li>
-                    <li><a href="javascript:stopSpeakAutoSpeech()">Stop Speak.js Autoplay</a></li>
+                    <li><a href="javascript:speakSpeech(function() {})">Speak.js Speech (once)</a></li>
+                    <li><div style="float:left"><a href="javascript:startSpeakAutoSpeech()">Start Speak.js Autoplay</a></div><div style="float:right"><a href="javascript:stopSpeakAutoSpeech()">Stop</a></div></li>
                     <li><a href="javascript:toggleVozmeSpeech()">Toggle VozMe Speech</a></li>
                 </ul>
             </li>                
